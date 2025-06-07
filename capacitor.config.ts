@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'center.usahome.app',
   appName: 'USA Home',
-  webDir: 'client/dist',
+ webDir: 'dist/public',
   // No longer needed in newer Capacitor versions 
   // bundledWebRuntime: false,
   // App version information is set in native projects
