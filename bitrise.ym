@@ -1,0 +1,28 @@
+---
+format_version: '11'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+app:
+  envs:
+  - BITRISE_PROJECT_PATH: ios/App/App.xcworkspace
+  - BITRISE_SCHEME: App
+
+workflows:
+  primary:
+    steps:
+    - activate-ssh-key@4: {}
+    - git-clone@8: {}
+    - script@1:
+        title: Install dependencies
+        inputs:
+        - content: npm install
+    - cocoapods-install@2:
+        inputs:
+        - source_root_path: ios/App
+    - xcode-archive@4:
+        inputs:
+        - project_path: ios/App/App.xcworkspace
+        - scheme: App
+        - export_method: development
+        - disable_codesign: "yes"
+    - deploy-to-bitrise-io@2: {}
