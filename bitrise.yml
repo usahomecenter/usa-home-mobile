@@ -2,29 +2,26 @@
 format_version: '11'
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
-app:
-  envs:
-  - BITRISE_PROJECT_PATH: ios/App/App.xcworkspace
-  - BITRISE_SCHEME: App
-  - BITRISE_EXPORT_METHOD: development
+meta:
+  bitrise.io:
+    stack: osx-xcode-15.0.x
+    machine_type_id: g2-m1.4core
 
 workflows:
-  run_tests:
-    before_run: []
-    after_run: []
+  primary:
+    description: iOS build without automatic test detection
     steps:
     - git-clone@8: {}
     - script@1:
-        title: Simple archive build
+        title: Complete iOS build process
         inputs:
         - content: |
             #!/usr/bin/env bash
             set -ex
             
-            echo "Preparing for archive build"
+            echo "Starting iOS build"
             cd ios/App
             
-            # Create minimal Podfile
             cat > Podfile << 'EOF'
             platform :ios, '14.0'
             use_frameworks!
@@ -54,17 +51,23 @@ workflows:
             end
             EOF
             
-            echo "Ready for CocoaPods install"
+            pod install --verbose
             
-    - cocoapods-install@2:
+            xcodebuild archive \
+              -workspace App.xcworkspace \
+              -scheme App \
+              -configuration Release \
+              -archivePath build/App.xcarchive \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGNING_ALLOWED=NO \
+              SKIP_INSTALL=NO
+              
+            cd ../../
+            tar -czf usa-home-ios-build.tar.gz ios/App/build/
+            
+    - deploy-to-bitrise-io@2:
         inputs:
-        - source_root_path: ios/App
-        
-    - xcode-archive@4:
-        inputs:
-        - project_path: ios/App/App.xcworkspace
-        - scheme: App
-        - configuration: Release
-        - export_method: development
-        - disable_codesign: true
-        - xcodebuild_options: SKIP_INSTALL=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=NO
+        - deploy_path: usa-home-ios-build.tar.gz
+        - notify_user_groups: none
+        - is_enable_public_page: false
