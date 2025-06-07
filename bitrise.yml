@@ -1,0 +1,95 @@
+---
+format_version: '11'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+app:
+  envs:
+  - BITRISE_PROJECT_PATH: ios/App/App.xcworkspace
+  - BITRISE_SCHEME: App
+
+workflows:
+  run_tests:
+    steps:
+    - git-clone@8: {}
+    - script@1:
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -ex
+            
+            mkdir -p client/dist
+            echo '<html><head><title>USA Home</title></head><body><h1>USA Home</h1></body></html>' > client/dist/index.html
+            
+            cd ios/App
+            cat > Podfile << 'EOF'
+            platform :ios, '14.0'
+            use_frameworks!
+            
+            target 'App' do
+              pod 'Capacitor', '~> 5.0'
+              pod 'CapacitorCordova', '~> 5.0'
+              pod 'CapacitorApp', '~> 5.0'
+              pod 'CapacitorBrowser', '~> 5.0'
+              pod 'CapacitorDevice', '~> 5.0'
+              pod 'CapacitorNetwork', '~> 5.0'
+              pod 'CapacitorPreferences', '~> 5.0'
+              pod 'CapacitorSplashScreen', '~> 5.0'
+              pod 'CapacitorStatusBar', '~> 5.0'
+            end
+            EOF
+            
+    - cocoapods-install@2:
+        inputs:
+        - source_root_path: ios/App
+        
+    - xcode-archive@4:
+        inputs:
+        - project_path: ios/App/App.xcworkspace
+        - scheme: App
+        - disable_codesign: true
+        - xcodebuild_options: CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+        
+    - deploy-to-bitrise-io@2: {}
+
+  primary:
+    steps:
+    - git-clone@8: {}
+    - script@1:
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -ex
+            
+            mkdir -p client/dist
+            echo '<html><head><title>USA Home</title></head><body><h1>USA Home</h1></body></html>' > client/dist/index.html
+            
+            cd ios/App
+            cat > Podfile << 'EOF'
+            platform :ios, '14.0'
+            use_frameworks!
+            
+            target 'App' do
+              pod 'Capacitor', '~> 5.0'
+              pod 'CapacitorCordova', '~> 5.0'
+              pod 'CapacitorApp', '~> 5.0'
+              pod 'CapacitorBrowser', '~> 5.0'
+              pod 'CapacitorDevice', '~> 5.0'
+              pod 'CapacitorNetwork', '~> 5.0'
+              pod 'CapacitorPreferences', '~> 5.0'
+              pod 'CapacitorSplashScreen', '~> 5.0'
+              pod 'CapacitorStatusBar', '~> 5.0'
+            end
+            EOF
+            
+    - cocoapods-install@2:
+        inputs:
+        - source_root_path: ios/App
+        
+    - xcode-archive@4:
+        inputs:
+        - project_path: ios/App/App.xcworkspace
+        - scheme: App
+        - disable_codesign: true
+        - xcodebuild_options: CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+        
+    - deploy-to-bitrise-io@2: {}
