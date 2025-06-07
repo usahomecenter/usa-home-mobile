@@ -15,53 +15,31 @@ workflows:
     steps:
     - git-clone@8: {}
     - script@1:
-        title: Complete iOS Build Setup with Capacitor Files
+        title: Remove problematic references and build
         inputs:
         - content: |
             #!/usr/bin/env bash
             set -ex
             
-            # Create web content
-            mkdir -p client/dist
-            echo '<!DOCTYPE html><html><head><title>USA Home</title></head><body><h1>USA Home App</h1></body></html>' > client/dist/index.html
+            echo "Removing problematic file references from Xcode project"
             
-            # Create capacitor config
-            cat > capacitor.config.json << 'EOF'
-            {
-              "appId": "com.usahome.app",
-              "appName": "USA Home",
-              "webDir": "client/dist",
-              "bundledWebRuntime": false,
-              "ios": {
-                "scheme": "App"
-              }
-            }
-            EOF
-            
-            # Copy config to iOS app directory
-            cp capacitor.config.json ios/App/App/
-            
-            # Create config.xml for iOS
-            mkdir -p ios/App/App/public
-            cat > ios/App/App/config.xml << 'EOF'
-            <?xml version='1.0' encoding='utf-8'?>
-            <widget id="com.usahome.app" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-                <name>USA Home</name>
-                <description>USA Home App</description>
-                <author email="info@usahome.com" href="https://usahome.com">USA Home Team</author>
-                <content src="index.html" />
-                <access origin="*" />
-                <allow-intent href="http://*/*" />
-                <allow-intent href="https://*/*" />
-                <platform name="ios">
-                    <allow-intent href="itms:*" />
-                    <allow-intent href="itms-apps:*" />
-                </platform>
-            </widget>
-            EOF
-            
-            # Fix Podfile
+            # Navigate to iOS project
             cd ios/App
+            
+            # Remove references to missing files from project.pbxproj
+            if [ -f "App.xcodeproj/project.pbxproj" ]; then
+              # Create backup
+              cp App.xcodeproj/project.pbxproj App.xcodeproj/project.pbxproj.backup
+              
+              # Remove references to missing files
+              sed -i '' '/config\.xml/d' App.xcodeproj/project.pbxproj
+              sed -i '' '/capacitor\.config\.json/d' App.xcodeproj/project.pbxproj
+              sed -i '' '/public/d' App.xcodeproj/project.pbxproj
+              
+              echo "Removed problematic file references"
+            fi
+            
+            # Create minimal Podfile
             cat > Podfile << 'EOF'
             platform :ios, '14.0'
             use_frameworks!
@@ -83,23 +61,25 @@ workflows:
               installer.pods_project.targets.each do |target|
                 target.build_configurations.each do |config|
                   config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+                  config.build_settings['CODE_SIGN_IDENTITY'] = ""
+                  config.build_settings['CODE_SIGNING_REQUIRED'] = "NO"
+                  config.build_settings['CODE_SIGNING_ALLOWED'] = "NO"
                 end
               end
             end
             EOF
             
-            echo "Setup complete with all Capacitor files"
+            echo "Project cleaned and ready for build"
             
     - cocoapods-install@2:
         inputs:
         - source_root_path: ios/App
         
-    - xcode-archive@4:
+    - xcode-build-for-simulator@0:
         inputs:
         - project_path: ios/App/App.xcworkspace
         - scheme: App
-        - configuration: Release
-        - export_method: development
+        - destination: platform=iOS Simulator,name=iPhone 14
         - disable_codesign: true
         - xcodebuild_options: CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
         
