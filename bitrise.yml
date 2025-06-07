@@ -15,39 +15,16 @@ workflows:
     steps:
     - git-clone@8: {}
     - script@1:
-        title: Comprehensive Xcode project cleanup
+        title: Simple archive build
         inputs:
         - content: |
             #!/usr/bin/env bash
             set -ex
             
-            echo "Comprehensive cleanup of Xcode project"
-            
+            echo "Preparing for archive build"
             cd ios/App
             
-            # Remove all problematic file references
-            if [ -f "App.xcodeproj/project.pbxproj" ]; then
-              cp App.xcodeproj/project.pbxproj App.xcodeproj/project.pbxproj.backup
-              
-              # Use more comprehensive patterns to remove file references
-              grep -v "config\.xml" App.xcodeproj/project.pbxproj.backup > temp1
-              grep -v "capacitor\.config\.json" temp1 > temp2
-              grep -v "public/" temp2 > temp3
-              grep -v "/public" temp3 > temp4
-              grep -v "App/public" temp4 > temp5
-              grep -v "\"public\"" temp5 > App.xcodeproj/project.pbxproj
-              
-              # Clean up temp files
-              rm -f temp1 temp2 temp3 temp4 temp5
-              
-              echo "Removed all references to problematic files"
-              
-              # Show what was removed
-              echo "Lines removed from project.pbxproj:"
-              diff App.xcodeproj/project.pbxproj.backup App.xcodeproj/project.pbxproj | head -20 || true
-            fi
-            
-            # Create working Podfile
+            # Create minimal Podfile
             cat > Podfile << 'EOF'
             platform :ios, '14.0'
             use_frameworks!
@@ -77,21 +54,17 @@ workflows:
             end
             EOF
             
-            echo "Project comprehensively cleaned and ready"
+            echo "Ready for CocoaPods install"
             
     - cocoapods-install@2:
         inputs:
         - source_root_path: ios/App
         
-    - xcode-build-for-simulator@0:
+    - xcode-archive@4:
         inputs:
         - project_path: ios/App/App.xcworkspace
         - scheme: App
-        - destination: platform=iOS Simulator,name=iPhone 14
+        - configuration: Release
+        - export_method: development
         - disable_codesign: true
-        - xcodebuild_options: CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
-        
-    - deploy-to-bitrise-io@2:
-        inputs:
-        - notify_user_groups: none
-        - is_enable_public_page: false
+        - xcodebuild_options: SKIP_INSTALL=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=NO
