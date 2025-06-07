@@ -8,42 +8,114 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "center.usahome.app"
-        APP_STORE_CONNECT_ISSUER_ID: $APP_STORE_CONNECT_ISSUER_ID
-        APP_STORE_CONNECT_KEY_IDENTIFIER: $APP_STORE_CONNECT_KEY_IDENTIFIER  
-        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
-        CERTIFICATE_PRIVATE_KEY: $CERTIFICATE_PRIVATE_KEY
       node: v18
       xcode: latest
       cocoapods: default
     scripts:
       - name: Install dependencies
-        script: npm ci
+        script: |
+          npm ci
       - name: Install CocoaPods
         script: |
           cd ios/App
-          pod install
+          pod install --repo-update
       - name: Create web content
         script: |
           mkdir -p client/dist
-          echo '<!DOCTYPE html><html><head><title>USA Home</title></head><body><h1>USA Home</h1><p>iOS App v1.0</p></body></html>' > client/dist/index.html
-      - name: Set up signing
+          cat > client/dist/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+            <title>USA Home</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+                color: white;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+              }
+              .container { 
+                text-align: center;
+                background: rgba(255, 255, 255, 0.1);
+                padding: 60px 40px;
+                border-radius: 24px;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                max-width: 400px;
+                width: 100%;
+              }
+              h1 { 
+                font-size: 2.8rem; 
+                font-weight: 700;
+                margin-bottom: 16px;
+                letter-spacing: -1px;
+              }
+              .tagline { 
+                font-size: 1.2rem; 
+                margin-bottom: 12px;
+                opacity: 0.9;
+                font-weight: 500;
+              }
+              .description { 
+                font-size: 1rem; 
+                margin-bottom: 24px;
+                opacity: 0.8;
+                line-height: 1.5;
+              }
+              .version { 
+                font-size: 0.9rem; 
+                opacity: 0.7;
+                background: rgba(255, 255, 255, 0.1);
+                padding: 8px 16px;
+                border-radius: 12px;
+                display: inline-block;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>USA Home</h1>
+              <p class="tagline">Home Building & Design</p>
+              <p class="description">Connecting homeowners with professionals across America</p>
+              <div class="version">Version 1.0 - iOS</div>
+            </div>
+          </body>
+          </html>
+          EOF
+      - name: Set up keychain
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files $BUNDLE_ID \
-            --type IOS_APP_STORE \
-            --create
-      - name: Set up code signing settings on Xcode project
+      - name: Build for simulator
         script: |
-          xcode-project use-profiles
-      - name: Build ipa
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+                     -scheme App \
+                     -configuration Debug \
+                     -destination "platform=iOS Simulator,name=iPhone 14" \
+                     build
+      - name: Archive for distribution
         script: |
-          xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+                     -scheme App \
+                     -configuration Release \
+                     -destination generic/platform=iOS \
+                     -archivePath build/App.xcarchive \
+                     archive
     artifacts:
-      - build/ios/ipa/*.ipa
+      - ios/App/build/*.xcarchive
+      - /tmp/xcodebuild_logs/*.log
     publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: false
-        submit_to_app_store: false
+      email:
+        recipients:
+          - shirinhamidi@gmail.com
+        notify:
+          success: true
+          failure: false
