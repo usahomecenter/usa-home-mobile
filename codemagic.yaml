@@ -18,13 +18,14 @@ workflows:
         script: |
           cd ios/App
           pod install --repo-update
-      - name: Initialize keychain
-        script: keychain initialize
-      - name: Build iOS archive
+      - name: Build for simulator first
         script: |
           cd ios/App
-          xcodebuild clean -workspace App.xcworkspace -scheme App
-          xcodebuild archive -workspace App.xcworkspace -scheme App -configuration Release -destination generic/platform=iOS -archivePath build/App.xcarchive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO PROVISIONING_PROFILE=""
+          xcodebuild build -workspace App.xcworkspace -scheme App -configuration Debug -destination "platform=iOS Simulator,name=iPhone 14"
+      - name: Create unsigned archive
+        script: |
+          cd ios/App
+          xcodebuild archive -workspace App.xcworkspace -scheme App -configuration Release -destination generic/platform=iOS -archivePath build/App.xcarchive -allowProvisioningUpdates DEVELOPMENT_TEAM="" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
     artifacts:
       - ios/App/build/App.xcarchive
       - /tmp/xcodebuild_logs/*.log
