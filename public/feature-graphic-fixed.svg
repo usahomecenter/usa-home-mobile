@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="500" viewBox="0 0 1024 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4361EE" />
+      <stop offset="100%" stop-color="#3A0CA3" />
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="500" fill="url(#bgGradient)" />
+  
+  <!-- Decorative elements -->
+  <circle cx="100" cy="100" r="200" fill="#4CC9F0" fill-opacity="0.1" />
+  <circle cx="900" cy="400" r="150" fill="#F72585" fill-opacity="0.1" />
+  
+  <!-- House Illustration (matching updated app icon) -->
+  <g transform="translate(100, 30) scale(0.85)">
+    <!-- House Body/Structure - White with siding texture -->
+    <rect x="80" y="220" width="240" height="190" rx="8" fill="white" stroke="#dddddd" stroke-width="2" />
+    
+    <!-- Triangle Roof Outline - This is the border only -->
+    <path d="M60 220L200 100L340 220H60Z" fill="none" stroke="#202060" stroke-width="2" />
+    
+    <!-- USA Flag inside the Roof Triangle -->
+    <g>
+      <clipPath id="roofClip">
+        <path d="M61 219L200 101L339 219H61Z" />
+      </clipPath>
+      
+      <g clip-path="url(#roofClip)">
+        <!-- Navy blue rectangle for stars area -->
+        <rect x="60" y="100" width="112" height="120" fill="#3C3B6E" />
+        
+        <!-- Stars as circles in a 5x4 grid -->
+        <g>
+          <circle cx="76" cy="110" r="4" fill="white" />
+          <circle cx="106" cy="110" r="4" fill="white" />
+          <circle cx="136" cy="110" r="4" fill="white" />
+          <circle cx="166" cy="110" r="4" fill="white" />
+          
+          <circle cx="91" cy="130" r="4" fill="white" />
+          <circle cx="121" cy="130" r="4" fill="white" />
+          <circle cx="151" cy="130" r="4" fill="white" />
+          
+          <circle cx="76" cy="150" r="4" fill="white" />
+          <circle cx="106" cy="150" r="4" fill="white" />
+          <circle cx="136" cy="150" r="4" fill="white" />
+          <circle cx="166" cy="150" r="4" fill="white" />
+          
+          <circle cx="91" cy="170" r="4" fill="white" />
+          <circle cx="121" cy="170" r="4" fill="white" />
+          <circle cx="151" cy="170" r="4" fill="white" />
+          
+          <circle cx="76" cy="190" r="4" fill="white" />
+          <circle cx="106" cy="190" r="4" fill="white" />
+          <circle cx="136" cy="190" r="4" fill="white" />
+          <circle cx="166" cy="190" r="4" fill="white" />
+        </g>
+        
+        <!-- Red and White Stripes filling right side of roof -->
+        <g>
+          <rect x="172" y="100" width="168" height="17" fill="#B22234" />
+          <rect x="172" y="117" width="168" height="17" fill="white" />
+          <rect x="172" y="134" width="168" height="17" fill="#B22234" />
+          <rect x="172" y="151" width="168" height="17" fill="white" />
+          <rect x="172" y="168" width="168" height="17" fill="#B22234" />
+          <rect x="172" y="185" width="168" height="17" fill="white" />
+          <rect x="172" y="202" width="168" height="18" fill="#B22234" />
+        </g>
+      </g>
+    </g>
+    
+    <!-- Chimney with "Loan $$" text -->
+    <rect x="270" y="130" width="30" height="90" fill="#B22222" />
+    <rect x="265" y="120" width="40" height="10" fill="#333333" />
+    
+    <!-- Windows - Build and Design Buttons -->
+    <rect x="110" y="260" width="60" height="60" rx="4" fill="#73C7FF" stroke="#3057D4" stroke-width="2" />
+    <g transform="translate(140, 290)">
+      <path d="M-20 0H20M-10 -15V15M10 -15V15" stroke="#00254E" stroke-width="2" />
+    </g>
+    
+    <rect x="230" y="260" width="60" height="60" rx="4" fill="#73C7FF" stroke="#3057D4" stroke-width="2" />
+    <g transform="translate(260, 290)">
+      <path d="M-20 0H20M-10 -15V15M10 -15V15" stroke="#00254E" stroke-width="2" />
+    </g>
+    
+    <!-- Door - Finance Button -->
+    <rect x="170" y="320" width="60" height="90" rx="4" fill="#FF9A3C" stroke="#B25929" stroke-width="2" />
+    <circle cx="185" cy="365" r="4" fill="#333333" />
+    <g transform="translate(200, 365)">
+      <path d="M-15 0H15M0 -20V20" stroke="#7A4019" stroke-width="2" />
+    </g>
+    
+    <!-- Foundation -->
+    <rect x="70" y="410" width="260" height="20" rx="2" fill="#BBBBBB" />
+    
+    <!-- Flag-themed Driveway -->
+    <g transform="translate(170, 430)">
+      <rect x="0" y="0" width="60" height="5" fill="#B22234" />
+      <rect x="0" y="5" width="60" height="5" fill="white" />
+      <rect x="0" y="10" width="60" height="5" fill="#B22234" />
+    </g>
+  </g>
+  
+  <!-- App Title and Tagline -->
+  <g transform="translate(450, 180)">
+    <!-- USA HOME text -->
+    <text x="0" y="40" font-family="Arial, sans-serif" font-size="70" font-weight="bold" fill="white">USA HOME</text>
+    
+    <!-- Main Tagline -->
+    <text x="0" y="80" font-family="Arial, sans-serif" font-size="24" font-weight="normal" fill="white">YOUR DREAM HOME STARTS HERE</text>
+    
+    <!-- Separator line -->
+    <line x1="0" y1="100" x2="350" y2="100" stroke="white" stroke-width="2" />
+    
+    <!-- Three main categories -->
+    <text x="0" y="140" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="white">BUILD · DESIGN · FINANCE</text>
+    
+    <!-- Feature icons -->
+    <g transform="translate(0, 180)">
+      <!-- Build icon -->
+      <circle cx="20" cy="20" r="15" fill="#4CC9F0" />
+      
+      <!-- Design icon -->
+      <circle cx="150" cy="20" r="15" fill="#F72585" />
+      
+      <!-- Finance icon -->
+      <circle cx="300" cy="20" r="15" fill="#FF9A3C" />
+    </g>
+  </g>
+</svg>

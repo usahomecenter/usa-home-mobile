@@ -1,0 +1,181 @@
+/**
+ * Mobile-specific styles for USA Home app
+ * These styles handle platform-specific adaptations for iOS and Android
+ */
+
+/* Mobile container with safe area insets */
+.mobile-app-container {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* iOS-specific styles */
+.ios-platform {
+  /* Add support for iOS safe areas (notch, home indicator) */
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+}
+
+/* iOS status bar padding */
+.ios-status-bar-padding {
+  padding-top: env(safe-area-inset-top, 44px);
+}
+
+/* iOS home indicator padding */
+.ios-home-indicator-padding {
+  padding-bottom: env(safe-area-inset-bottom, 34px);
+}
+
+/* Android-specific styles */
+.android-platform {
+  /* Default Android status bar height */
+  padding-top: 24px;
+}
+
+/* General mobile adjustments */
+@media (max-width: 768px) {
+  /* Increase touch target sizes on mobile */
+  button, 
+  .mobile-btn,
+  [role="button"],
+  .interactive {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Adjust fonts for better mobile readability */
+  body {
+    font-size: 16px;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  /* Prevent text zoom */
+  input, 
+  textarea, 
+  select, 
+  button {
+    font-size: 16px;
+  }
+}
+
+/* Mobile navigation adjustments */
+.mobile-nav-active {
+  overflow: hidden;
+}
+
+/* Fix for mobile scrolling */
+.mobile-scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* Add system font stack for both platforms */
+.mobile-system-font {
+  font-family: 
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Open Sans',
+    'Helvetica Neue',
+    sans-serif;
+}
+
+/* Fix for fixed elements on mobile */
+.mobile-fixed {
+  position: fixed;
+  z-index: 100;
+}
+
+/* Bottom sheet styles for mobile */
+.mobile-bottom-sheet {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: white;
+  transform: translateY(100%);
+  transition: transform 0.3s ease-out;
+}
+
+.mobile-bottom-sheet.active {
+  transform: translateY(0);
+}
+
+/* Mobile header styles */
+.mobile-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile footer adjustments */
+.mobile-footer {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Hide elements on mobile */
+@media (max-width: 640px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+}
+
+/* Show elements only on mobile */
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mobile-only {
+    display: block;
+  }
+}
+
+/* Disable double-tap zoom */
+* {
+  touch-action: manipulation;
+}
+
+/* Fix smooth scrolling on iOS */
+html {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optimize transitions for mobile */
+* {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
+}
+
+@media (min-width: 769px) {
+  * {
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
+  }
+}

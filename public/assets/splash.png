@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EEF2FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E0F2FE;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="roof-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06B6D4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="door-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F97316;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Drop shadow filter -->
+    <filter id="drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="15" flood-color="#3730A3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="url(#bg-gradient)" />
+  
+  <!-- Centered House with Shadow -->
+  <g transform="translate(212, 212) scale(0.6)" filter="url(#drop-shadow)">
+    <!-- Roof -->
+    <path d="M250,10 L10,200 L490,200 Z" fill="url(#roof-gradient)" />
+    
+    <!-- House Body -->
+    <rect x="60" y="200" width="380" height="300" rx="8" fill="white" stroke="#4F46E5" stroke-width="10" />
+    
+    <!-- Door -->
+    <rect x="200" y="350" width="100" height="150" rx="5" fill="url(#door-gradient)" />
+    <circle cx="220" cy="430" r="10" fill="white" />
+    
+    <!-- Windows -->
+    <rect x="100" y="240" width="100" height="100" rx="8" fill="#E0F2FE" stroke="#4F46E5" stroke-width="6" />
+    <rect x="300" y="240" width="100" height="100" rx="8" fill="#E0F2FE" stroke="#4F46E5" stroke-width="6" />
+  </g>
+  
+  <!-- Brand Name -->
+  <text x="512" y="650" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="72" fill="#333333">USA HOME</text>
+  
+  <!-- Tagline -->
+  <text x="512" y="720" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="#666666">Your Dream Home Starts Here</text>
+</svg>

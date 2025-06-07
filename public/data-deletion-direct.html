@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USA Home - Data Deletion Request</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        h2 {
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        p, ul {
+            margin-bottom: 15px;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="email"], 
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+        }
+        .checkbox-group {
+            margin: 15px 0;
+        }
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0052a3;
+        }
+        .success-message {
+            background-color: #e7f7e7;
+            border: 1px solid #c3e6c3;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>USA Home - Data Deletion Request</h1>
+        <p>In accordance with privacy regulations like GDPR and CCPA, USA Home provides users with the ability to request deletion of their account and associated personal data.</p>
+        <p>Upon submission of this form, we will process your request within 30 days. Once your data is deleted, it cannot be recovered.</p>
+        
+        <div id="form-container">
+            <form id="deletion-form">
+                <div class="form-group">
+                    <label for="email">Email Address*</label>
+                    <input type="email" id="email" placeholder="Enter the email associated with your account" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reason">Reason for Deletion (Optional)</label>
+                    <textarea id="reason" placeholder="Please let us know why you're requesting data deletion"></textarea>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="confirm" required>
+                    <label for="confirm">I understand that this request will delete my account and all associated data, and this action cannot be undone.</label>
+                </div>
+                
+                <button type="submit">Submit Deletion Request</button>
+            </form>
+        </div>
+        
+        <div id="success-message" class="success-message">
+            <h2>Request Received</h2>
+            <p>Your data deletion request has been received. We will process your request within 30 days and contact you at the provided email address.</p>
+        </div>
+        
+        <p style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+        </p>
+    </div>
+
+    <script>
+        // Simple form submission handler
+        document.getElementById('deletion-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // In a real implementation, this would send the data to your backend
+            
+            // Show success message
+            document.getElementById('form-container').style.display = 'none';
+            document.getElementById('success-message').style.display = 'block';
+        });
+    </script>
+</body>
+</html>

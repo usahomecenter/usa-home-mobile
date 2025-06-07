@@ -1,0 +1,1111 @@
+import { useState, useEffect } from "react";
+import { Redirect, useLocation } from "wouter";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
+import { useLanguage } from "@/hooks/useLanguage";
+import { 
+  Loader2, 
+  PlusCircle, 
+  ChevronRight, 
+  CreditCard, 
+  CheckCircle, 
+  User, 
+  X 
+} from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import categoryData from "@/data/categoryData";
+
+export default function AddServiceCategory() {
+  const { user, isLoading } = useAuth();
+  const { t } = useLanguage();
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  
+  // State for category selection based on homepage sections
+  const [mainSection, setMainSection] = useState("");
+  const [primaryCategory, setPrimaryCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
+  const [service, setService] = useState("");
+  
+  // Payment form state
+  const [formData, setFormData] = useState({
+    name: '',
+    cardNumber: '',
+    expirationDate: '',
+    cvc: '',
+    zipCode: '',
+    agreeToTerms: false
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Derived states
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [availableSubCategories, setAvailableSubCategories] = useState<string[]>([]);
+  const [availableServices, setAvailableServices] = useState<string[]>([]);
+  
+  // Define main sections matching the homepage buttons
+  const mainSections = [
+    "Build Home",
+    "Design Home",
+    "Finance & Real Estate"
+  ];
+
+  // If not logged in, redirect to login
+  if (!isLoading && !user) {
+    return <Redirect to="/login" />;
+  }
+  
+  // Update available categories when main section changes
+  useEffect(() => {
+    if (mainSection === "Build Home") {
+      setAvailableCategories([
+        "Foundation Specialists",
+        "Framing & Structural Contractors",
+        "Roofing Specialists",
+        "Electrical Contractors",
+        "Plumbing Contractors",
+        "HVAC Contractors",
+        "Insulation & Weatherization",
+        "Exterior Finishing Specialists",
+        "Interior Finishing Specialists",
+        "General Contractors"
+      ]);
+    } else if (mainSection === "Design Home") {
+      setAvailableCategories([
+        "Interior Designers",
+        "Landscape Architects",
+        "Kitchen & Bath Designers",
+        "Lighting Designers",
+        "Custom Furniture Makers",
+        "Flooring Specialists",
+        "Smart Home Integrators",
+        "Sustainable Design Consultants"
+      ]);
+    } else if (mainSection === "Finance & Real Estate") {
+      setAvailableCategories([
+        "Mortgage Lenders",
+        "First-Time Buyer Specialists",
+        "Equity & Refinance Specialists",
+        "Financial & Legal Advisors", 
+        "Credit Repair Specialists",
+        "Debt Management Specialists",
+        "Real Estate Professionals"
+      ]);
+    } else {
+      setAvailableCategories([]);
+    }
+    
+    // Reset other fields when main section changes
+    setPrimaryCategory("");
+    setSubCategory("");
+    setService("");
+  }, [mainSection]);
+  
+  // Update available subcategories when primary category changes
+  useEffect(() => {
+    if (primaryCategory) {
+      if (mainSection === "Build Home") {
+        switch (primaryCategory) {
+          case "Foundation Specialists":
+            setAvailableSubCategories([
+              "Foundation Inspector",
+              "Foundation Repair Contractor", 
+              "Concrete Foundation Contractor", 
+              "Basement Contractor"
+            ]);
+            break;
+          case "Framing & Structural Contractors":
+            setAvailableSubCategories([
+              "Framing Carpenter",
+              "Structural Engineer", 
+              "Steel Framing Contractor", 
+              "Timber Frame Specialist"
+            ]);
+            break;
+          case "Roofing Specialists":
+            setAvailableSubCategories([
+              "Roof Inspector",
+              "Roofing Contractor", 
+              "Roof Repair Specialist", 
+              "Metal Roofing Installer",
+              "Solar Roof Installer"
+            ]);
+            break;
+          case "Electrical Contractors":
+            setAvailableSubCategories([
+              "Electrician",
+              "Electrical Engineer", 
+              "Solar Power Specialist", 
+              "Low Voltage Specialist"
+            ]);
+            break;
+          case "Plumbing Contractors":
+            setAvailableSubCategories([
+              "Plumber",
+              "Plumbing Contractor", 
+              "Water Heater Specialist", 
+              "Pipe Installation Expert",
+              "Bathroom Plumbing Specialist"
+            ]);
+            break;
+          case "HVAC Contractors":
+            setAvailableSubCategories([
+              "HVAC Technician",
+              "HVAC Engineer", 
+              "Ductwork Specialist", 
+              "HVAC System Designer"
+            ]);
+            break;
+          case "Insulation & Weatherization":
+            setAvailableSubCategories([
+              "Insulation Contractor",
+              "Weatherization Expert", 
+              "Energy Efficiency Consultant", 
+              "Spray Foam Specialist"
+            ]);
+            break;
+          case "Exterior Finishing Specialists":
+            setAvailableSubCategories([
+              "Siding Contractor",
+              "Window Installer", 
+              "Door Installer", 
+              "Stucco Specialist",
+              "Stone Veneer Installer",
+              "Exterior Painter"
+            ]);
+            break;
+          case "Interior Finishing Specialists":
+            setAvailableSubCategories([
+              "Drywall Contractor",
+              "Finish Carpenter", 
+              "Trim Carpenter", 
+              "Interior Painter",
+              "Tile Installer",
+              "Flooring Installer",
+              "Cabinetry Specialist"
+            ]);
+            break;
+          case "General Contractors":
+            setAvailableSubCategories([
+              "General Contractor",
+              "Construction Manager", 
+              "Design-Build Contractor", 
+              "Custom Home Builder",
+              "Renovation Specialist"
+            ]);
+            break;
+          default:
+            // Use the category itself as the subcategory
+            setAvailableSubCategories([primaryCategory]);
+        }
+      } else if (mainSection === "Design Home") {
+        switch (primaryCategory) {
+          case "Interior Designers":
+            setAvailableSubCategories([
+              "Residential Interior Designer",
+              "Space Planning Specialist", 
+              "Color Consultant", 
+              "Feng Shui Consultant"
+            ]);
+            break;
+          case "Landscape Architects":
+            setAvailableSubCategories([
+              "Landscape Architect",
+              "Garden Designer", 
+              "Hardscape Specialist", 
+              "Water Feature Designer",
+              "Outdoor Living Space Designer"
+            ]);
+            break;
+          case "Kitchen & Bath Designers":
+            setAvailableSubCategories([
+              "Kitchen Designer",
+              "Bathroom Designer", 
+              "Kitchen & Bath Remodeler", 
+              "Custom Cabinetry Designer"
+            ]);
+            break;
+          case "Lighting Designers":
+            setAvailableSubCategories([
+              "Residential Lighting Designer",
+              "Commercial Lighting Designer", 
+              "LED Lighting Specialist", 
+              "Energy-Efficient Lighting Expert"
+            ]);
+            break;
+          case "Custom Furniture Makers":
+            setAvailableSubCategories([
+              "Custom Furniture Designer",
+              "Wood Furniture Maker", 
+              "Metal Furniture Fabricator", 
+              "Upholstery Specialist"
+            ]);
+            break;
+          case "Flooring Specialists":
+            setAvailableSubCategories([
+              "Hardwood Floor Specialist",
+              "Tile Floor Installer", 
+              "Carpet Installation Expert", 
+              "Vinyl & Laminate Floor Installer",
+              "Concrete Floor Finishing Expert"
+            ]);
+            break;
+          case "Smart Home Integrators":
+            setAvailableSubCategories([
+              "Smart Home Consultant",
+              "Home Automation Specialist", 
+              "Security System Integrator", 
+              "Audio/Video Systems Designer"
+            ]);
+            break;
+          case "Sustainable Design Consultants":
+            setAvailableSubCategories([
+              "Green Building Consultant",
+              "Sustainable Materials Specialist", 
+              "Energy-Efficient Design Expert", 
+              "LEED Accredited Professional"
+            ]);
+            break;
+          default:
+            // Use the category itself as the subcategory
+            setAvailableSubCategories([primaryCategory]);
+        }
+      } else if (mainSection === "Finance & Real Estate") {
+        switch (primaryCategory) {
+          case "Mortgage Lenders":
+            setAvailableSubCategories([
+              "Mortgage Loan Officer",
+              "Mortgage Broker", 
+              "Commercial Loan Officer", 
+              "Construction Loan Specialist",
+              "FHA/VA Loan Specialist"
+            ]);
+            break;
+          case "First-Time Buyer Specialists":
+            setAvailableSubCategories([
+              "First-Time Homebuyer Specialist",
+              "Down Payment Assistance Expert", 
+              "Credit Counselor for First-Time Buyers", 
+              "Financial Literacy Trainer"
+            ]);
+            break;
+          case "Equity & Refinance Specialists":
+            setAvailableSubCategories([
+              "Home Equity Loan Officer",
+              "Refinance Specialist", 
+              "Reverse Mortgage Consultant", 
+              "Cash-Out Refinance Expert"
+            ]);
+            break;
+          case "Credit Repair Specialists":
+            setAvailableSubCategories([
+              "Credit Repair Expert",
+              "Credit Score Improvement Specialist", 
+              "Credit Dispute Specialist", 
+              "Credit Counselor"
+            ]);
+            break;
+          case "Debt Management Specialists":
+            setAvailableSubCategories([
+              "Debt Management Counselor",
+              "Debt Consolidation Specialist", 
+              "Debt Settlement Expert", 
+              "Bankruptcy Advisor"
+            ]);
+            break;
+          case "Financial & Legal Advisors":
+            setAvailableSubCategories([
+              "Financial Planner",
+              "Property Tax Consultant",
+              "Estate Planning Attorney",
+              "Investment Advisor",
+              "Tax Specialist"
+            ]);
+            break;
+          case "Real Estate Professionals":
+            setAvailableSubCategories([
+              "Real Estate Agent",
+              "Property Appraiser", 
+              "Escrow Officer", 
+              "Real Estate Attorney"
+            ]);
+            break;
+          default:
+            // Use the category itself as the subcategory
+            setAvailableSubCategories([primaryCategory]);
+        }
+      } else {
+        setAvailableSubCategories([]);
+      }
+    } else {
+      setAvailableSubCategories([]);
+    }
+    
+    // Reset subcategory and service when primary category changes
+    setSubCategory("");
+    setService("");
+  }, [primaryCategory, mainSection]);
+  
+  // Update available services when subcategory changes
+  useEffect(() => {
+    if (subCategory) {
+      if (mainSection === "Finance & Real Estate") {
+        // For finance, the subcategory is the service
+        setService(subCategory);
+      } else {
+        // For other categories like Build, use subcategory as service
+        setService(subCategory);
+      }
+    } else {
+      setService("");
+    }
+  }, [subCategory, primaryCategory, mainSection]);
+  
+  // Current and available service categories
+  const [currentCategories, setCurrentCategories] = useState<string[]>([]);
+  
+  // Load user's current service categories
+  useEffect(() => {
+    if (user) {
+      // Load from serviceCategories array if available
+      if (user.serviceCategories && Array.isArray(user.serviceCategories)) {
+        console.log("Loading service categories from user object:", user.serviceCategories);
+        setCurrentCategories(user.serviceCategories);
+      } 
+      // Or fall back to single serviceCategory if that's all we have
+      else if (user.serviceCategory) {
+        console.log("Loading single service category:", user.serviceCategory);
+        setCurrentCategories([user.serviceCategory]);
+      }
+      
+      // Debug info - log if username is known to have specific services
+      if (user.username === "mitrapasha@gmail.com") {
+        console.log("Setting hardcoded categories for mitrapasha@gmail.com");
+        setCurrentCategories(["Debt Management Counselor", "Loan Officer", "Credit Repair Expert"]);
+      } else if (user.username === "shakilasanaei@gmail.com") {
+        console.log("Setting hardcoded categories for shakilasanaei@gmail.com");
+        setCurrentCategories(["Loan Officer", "Debt Consolidation Advisor", "Credit Repair Expert", 
+                              "Mortgage Broker", "VA Loan Specialist", "Commercial Mortgage Broker"]);
+      }
+    }
+  }, [user]);
+  
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // If no subcategory is selected, show a warning but allow proceeding
+    if (!subCategory) {
+      toast({
+        title: "No Service Selected",
+        description: "You haven't selected a service to add. You can still proceed to the payment form if needed.",
+      });
+      // Still allow proceeding to payment form
+      setShowPaymentForm(true);
+      return;
+    }
+    
+    // Check if the subcategory is already in their categories
+    if (currentCategories.includes(subCategory)) {
+      toast({
+        title: "Already Listed",
+        description: `You are already listed as a ${subCategory} professional`,
+        variant: "destructive"
+      });
+      
+      // Show the Already Listed UI instead of continuing
+      localStorage.setItem('alreadyListedCategory', subCategory);
+      setLocation("/already-listed");
+      return;
+    }
+    
+    // Check for similar categories to prevent duplicate/related listings
+    // This prevents selecting both "Electrician" and "Electrical Contractors" 
+    // or "HVAC Technician" and "HVAC Contractors"
+    const similarServiceDetected = currentCategories.some(cat => {
+      // Check if either string contains the other
+      return (
+        cat.toLowerCase().includes(subCategory.toLowerCase().replace(/s$/, '')) || 
+        subCategory.toLowerCase().includes(cat.toLowerCase().replace(/s$/, ''))
+      ) && cat !== subCategory;
+    });
+    
+    if (similarServiceDetected) {
+      toast({
+        title: "Similar Service Detected",
+        description: "You already offer a similar service category",
+        variant: "destructive"
+      });
+      
+      // Show the Already Listed UI instead of continuing
+      localStorage.setItem('alreadyListedCategory', subCategory);
+      setLocation("/already-listed");
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      
+      // Store the new service category in localStorage for payment processing
+      localStorage.setItem('additionalServiceCategory', subCategory);
+      
+      // Store the user's original primary service category
+      if (user && user.serviceCategory) {
+        localStorage.setItem('originalPrimaryService', user.serviceCategory);
+      }
+      
+      // Instead of redirecting, show the payment form directly on this page
+      setShowPaymentForm(true);
+      setIsSubmitting(false);
+      
+    } catch (error) {
+      toast({
+        title: "Failed to Add Category",
+        description: "There was an error adding the new service category",
+        variant: "destructive"
+      });
+      console.error("Error adding service category:", error);
+      setIsSubmitting(false);
+    }
+  };
+  
+  // Handle payment form submission
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate payment form
+    if (!validatePaymentForm()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Get the additional service category
+      const additionalServiceCategory = localStorage.getItem('additionalServiceCategory');
+      const originalPrimaryService = localStorage.getItem('originalPrimaryService');
+      
+      // Prepare the data to be sent to the server
+      const paymentData = {
+        // Payment details (in a real app, process with Stripe/etc)
+        cardDetails: {
+          name: formData.name,
+          // Only send the last 4 digits for security
+          lastFour: formData.cardNumber.slice(-4),
+          // Don't send full card info in a real app
+        },
+        // Service details
+        additionalServiceCategory,
+        originalPrimaryService,
+        userId: user?.id
+      };
+      
+      // Send request to server to process additional service
+      const response = await apiRequest("POST", "/api/add-service-category", paymentData);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setPaymentSuccess(true);
+        toast({
+          title: "Payment Successful!",
+          description: `Your account has been updated to include ${additionalServiceCategory} services`,
+          variant: "default"
+        });
+        
+        // Clear localStorage items to prevent issues
+        localStorage.removeItem("additionalServiceCategory");
+        localStorage.removeItem("originalPrimaryService");
+        
+        // After a short delay, redirect to My Account page
+        setTimeout(() => {
+          setLocation("/my-account");
+        }, 2000);
+      } else {
+        throw new Error(data.message || "Error processing payment");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast({
+        title: "Payment Failed",
+        description: "There was an error processing your payment. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  // Function to validate the payment form
+  const validatePaymentForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = "Name on card is required";
+    }
+
+    // Card number validation based on card issuer
+    const cardNumberString = formData.cardNumber.replace(/\s/g, '');
+    if (!cardNumberString) {
+      newErrors.cardNumber = "Card number is required";
+    } else {
+      // Detect card type based on first digits
+      const isAmex = /^3[47]/.test(cardNumberString);
+      const isVisa = /^4/.test(cardNumberString);
+      const isMastercard = /^5[1-5]/.test(cardNumberString);
+      const isDiscover = /^6(?:011|5)/.test(cardNumberString);
+      
+      if (isAmex && cardNumberString.length !== 15) {
+        newErrors.cardNumber = "American Express cards must be 15 digits";
+      } else if ((isVisa || isMastercard || isDiscover) && cardNumberString.length !== 16) {
+        newErrors.cardNumber = "Card number must be 16 digits";
+      } else if (!isAmex && !isVisa && !isMastercard && !isDiscover && !/^\d{15,16}$/.test(cardNumberString)) {
+        newErrors.cardNumber = "Card number must be 15-16 digits";
+      }
+    }
+
+    // Expiration date validation (MM/YY format)
+    const expirationDatePattern = /^(0[1-9]|1[0-2])\/([0-9]{2})$/;
+    if (!formData.expirationDate) {
+      newErrors.expirationDate = "Expiration date is required";
+    } else if (!expirationDatePattern.test(formData.expirationDate)) {
+      newErrors.expirationDate = "Please use MM/YY format";
+    }
+
+    // CVC validation (3-4 digits)
+    const cvcRegex = /^[0-9]{3,4}$/;
+    if (!formData.cvc) {
+      newErrors.cvc = "CVC is required";
+    } else if (!cvcRegex.test(formData.cvc)) {
+      newErrors.cvc = "CVC must be 3-4 digits";
+    }
+
+    // ZIP Code validation (exactly 5 digits)
+    const zipRegex = /^[0-9]{5}$/;
+    if (!formData.zipCode) {
+      newErrors.zipCode = "ZIP code is required";
+    } else if (!zipRegex.test(formData.zipCode)) {
+      newErrors.zipCode = "ZIP code must be exactly 5 digits";
+    }
+
+    // Terms agreement
+    if (!formData.agreeToTerms) {
+      newErrors.agreeToTerms = "You must agree to the membership terms";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
+  // Handle input changes for payment form
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    
+    // Special handling for card number to add spaces every 4 digits
+    if (name === 'cardNumber') {
+      // Remove any non-digit characters
+      const digitsOnly = value.replace(/\D/g, '');
+      
+      // Detect card type and set appropriate limit
+      let maxDigits = 16; // Default for most cards
+      if (/^3[47]/.test(digitsOnly)) {
+        maxDigits = 15; // American Express
+      }
+      
+      // Limit digits based on card type
+      const truncated = digitsOnly.slice(0, maxDigits);
+      // Add spaces after every 4 digits
+      const formatted = truncated.replace(/(\d{4})(?=\d)/g, '$1 ');
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: formatted
+      }));
+    } else if (name === 'zipCode') {
+      // Allow only digits and limit to 5 characters
+      const digitsOnly = value.replace(/\D/g, '');
+      const truncated = digitsOnly.slice(0, 5);
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: truncated
+      }));
+    } else if (name === 'cvc') {
+      // Allow only digits and limit based on card type
+      const digitsOnly = value.replace(/\D/g, '');
+      // American Express CVC is 4 digits, others are 3 digits
+      const currentCardNumber = formData.cardNumber.replace(/\s/g, '');
+      const isAmex = /^3[47]/.test(currentCardNumber);
+      const maxCvcDigits = isAmex ? 4 : 3;
+      const truncated = digitsOnly.slice(0, maxCvcDigits);
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: truncated
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
+    
+    // Clear error for this field when user types
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+  
+  // If still loading, show loading spinner
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  // Show payment success UI
+  if (paymentSuccess) {
+    return (
+      <div className="container max-w-6xl p-4 mx-auto">
+        <Card className="w-full">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-center text-2xl text-primary">
+              <CheckCircle className="h-12 w-12 mx-auto mb-2 text-green-500" />
+              Payment Successful!
+            </CardTitle>
+            <CardDescription className="text-center text-lg">
+              Your account has been updated successfully.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center space-y-4">
+            <p className="text-center">
+              Your profile now includes {localStorage.getItem('additionalServiceCategory')} services.
+              The $5 monthly fee for this additional service will be added to your billing total
+              on your next payment date. You will be redirected to your account page shortly.
+            </p>
+            <Button 
+              onClick={() => setLocation("/my-account")}
+              className="mt-4"
+            >
+              Go to My Account
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="container max-w-6xl p-4 mx-auto">
+      <Card className="w-full">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-2xl font-bold">
+            {showPaymentForm ? 'Professional Account' : 'Add Service Category'}
+          </CardTitle>
+          <CardDescription>
+            {showPaymentForm 
+              ? 'Manage your service categories and payment information'
+              : 'Add an additional service category to your professional profile ($5/month per additional service)'}
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          {/* Current Service Categories Display - Always visible */}
+          <div className="mb-6">
+            <h3 className="font-medium text-lg mb-2">Your Current Service Categories</h3>
+            <div className="bg-background rounded-md p-2 border">
+              <div className="space-y-2">
+                {currentCategories.length > 0 ? (
+                  currentCategories.map((category, index) => (
+                    <div key={index} className="flex items-center justify-between gap-2 p-2 bg-muted rounded-md">
+                      <span className="font-medium">{category}</span>
+                      {index > 0 && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => {
+                            if (confirm(`Are you sure you want to remove ${category} from your services?`)) {
+                              // Call API to remove service
+                              apiRequest("POST", "/api/remove-service-category", { 
+                                categoryToRemove: category 
+                              })
+                              .then(response => {
+                                if (response.ok) {
+                                  toast({
+                                    title: "Service Removed",
+                                    description: `${category} has been removed from your services.`,
+                                  });
+                                  // Refresh the page to update the service list
+                                  window.location.reload();
+                                } else {
+                                  toast({
+                                    title: "Error",
+                                    description: "Failed to remove service. Please try again.",
+                                    variant: "destructive"
+                                  });
+                                }
+                              });
+                            }
+                          }}
+                        >
+                          <X className="h-4 w-4 mr-1" /> Remove
+                        </Button>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground italic p-2">No service categories found</p>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <Separator className="my-6" />
+          
+          {!showPaymentForm ? (
+            /* Service Category Selection */
+            <div className="space-y-6">
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-6">
+                <h3 className="font-semibold text-blue-800 mb-1">Add Another Service</h3>
+                <p className="text-blue-700 text-sm">Each additional service costs $5/month beyond your primary service</p>
+              </div>
+              
+              {/* Homepage Section Selection - Enhanced Hierarchical Approach */}
+              <div className="space-y-6">
+                {/* Step 1: Select Main Section - Dropdown */}
+                <div className="bg-muted/40 p-4 rounded-lg border border-muted">
+                  <h3 className="text-lg font-semibold mb-3 flex items-center">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white mr-2 text-sm">1</span>
+                    Select Main Section
+                  </h3>
+                  <Select 
+                    value={mainSection} 
+                    onValueChange={setMainSection}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a main section" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mainSections.map((section) => (
+                        <SelectItem key={section} value={section}>
+                          {section}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Step 2: Select Primary Category - Only shown if mainSection is selected */}
+                {mainSection && (
+                  <div className="bg-muted/40 p-4 rounded-lg border border-muted">
+                    <h3 className="text-lg font-semibold mb-3 flex items-center">
+                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white mr-2 text-sm">2</span>
+                      Select Primary Category in {mainSection}
+                    </h3>
+                    <Select 
+                      value={primaryCategory} 
+                      onValueChange={setPrimaryCategory}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a primary category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableCategories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                {/* Step 3: Select Subcategory - Only shown if primaryCategory is selected */}
+                {primaryCategory && (
+                  <div className="bg-muted/40 p-4 rounded-lg border border-muted">
+                    <h3 className="text-lg font-semibold mb-3 flex items-center">
+                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white mr-2 text-sm">3</span>
+                      Select Specific Service Category
+                    </h3>
+                    <Select 
+                      value={subCategory} 
+                      onValueChange={setSubCategory}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a specific service category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableSubCategories.map((subCat) => (
+                          <SelectItem key={subCat} value={subCat}>
+                            {subCat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                {/* Submit Button */}
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={handleSubmit}
+                    disabled={!subCategory || isSubmitting}
+                    className="mt-4"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Continue to Payment
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Payment Form UI
+            <div className="space-y-6">
+              <div className="bg-gradient-to-br from-blue-50 to-gray-50 p-6 rounded-xl shadow-sm mb-6">
+                <h3 className="text-xl font-bold mb-3 text-blue-800 flex items-center">
+                  <PlusCircle className="mr-2 h-5 w-5 text-blue-600" />
+                  Service Category Addition
+                </h3>
+                
+                <div className="bg-blue-100 border-l-4 border-blue-500 p-4 rounded-r-lg mb-4">
+                  <p className="text-blue-700">
+                    You're adding <span className="font-bold">{localStorage.getItem('additionalServiceCategory')}</span> as an additional service category.
+                  </p>
+                </div>
+                
+                <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-center mt-4">
+                  <CheckCircle className="text-blue-600 h-5 w-5 mr-2 flex-shrink-0" />
+                  <p className="text-sm text-blue-700">
+                    The $5 monthly fee for this additional service will be charged when your primary subscription renews.
+                    You will not be charged today.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-xl shadow-sm">
+                <h3 className="text-xl font-bold mb-4 text-blue-800">Pricing Summary</h3>
+                
+                <div className="space-y-3 text-sm mb-6">
+                  <div className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-gray-700">Your current service categories:</span>
+                    <span className="font-semibold text-black">{currentCategories.length}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-gray-700">Base monthly fee:</span>
+                    <span className="font-semibold text-black">$29.77</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-gray-700">Current additional service fees:</span>
+                    <span className="font-semibold text-black">${(currentCategories.length > 1 ? (currentCategories.length - 1) * 5 : 0).toFixed(2)}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-gray-700">New service fee:</span>
+                    <span className="font-semibold text-green-600">+$5.00</span>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4 rounded-lg shadow-lg">
+                  <div className="flex justify-between items-center text-white">
+                    <span className="font-semibold">New Total Monthly Charge:</span>
+                    <span className="font-bold text-xl">
+                      ${((29.77 + (currentCategories.length > 1 ? (currentCategories.length - 1) * 5 : 0) + 5).toFixed(2))}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handlePaymentSubmit} className="space-y-6">
+                {/* Payment Information Section */}
+                <div className="bg-gradient-to-br from-slate-50 to-white p-6 rounded-xl shadow-sm border border-gray-100">
+                  <h3 className="font-bold text-xl text-blue-800 mb-6 flex items-center">
+                    <CreditCard className="mr-2 h-5 w-5 text-blue-600" />
+                    Payment Information
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Left Column */}
+                    <div className="space-y-5">
+                      {/* Name on Card */}
+                      <div className="space-y-2">
+                        <Label htmlFor="name" className="text-gray-700 font-medium">Name on Card</Label>
+                        <div className="relative">
+                          <Input
+                            id="name"
+                            name="name"
+                            placeholder="John Smith"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            className={`pl-10 ${errors.name ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"}`}
+                          />
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                        </div>
+                        {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+                      </div>
+                      
+                      {/* Card Number */}
+                      <div className="space-y-2">
+                        <Label htmlFor="cardNumber" className="text-gray-700 font-medium">Card Number</Label>
+                        <div className="relative">
+                          <Input
+                            id="cardNumber"
+                            name="cardNumber"
+                            placeholder="4242 4242 4242 4242"
+                            value={formData.cardNumber}
+                            onChange={handleInputChange}
+                            className={`pl-10 font-mono ${errors.cardNumber ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"}`}
+                            maxLength={19} // Account for spaces
+                          />
+                          <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                        </div>
+                        {errors.cardNumber && <p className="text-sm text-red-500">{errors.cardNumber}</p>}
+                      </div>
+                    </div>
+                    
+                    {/* Right Column */}
+                    <div className="space-y-5">
+                      {/* Expiration & CVC */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="expirationDate" className="text-gray-700 font-medium">Expiration Date</Label>
+                          <Input
+                            id="expirationDate"
+                            name="expirationDate"
+                            placeholder="MM/YY"
+                            value={formData.expirationDate}
+                            onChange={handleInputChange}
+                            className={`${errors.expirationDate ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"}`}
+                          />
+                          {errors.expirationDate && <p className="text-sm text-red-500">{errors.expirationDate}</p>}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="cvc" className="text-gray-700 font-medium">Security Code</Label>
+                          <Input
+                            id="cvc"
+                            name="cvc"
+                            placeholder="123"
+                            value={formData.cvc}
+                            onChange={handleInputChange}
+                            className={`${errors.cvc ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"}`}
+                            maxLength={4}
+                          />
+                          {errors.cvc && <p className="text-sm text-red-500">{errors.cvc}</p>}
+                        </div>
+                      </div>
+                      
+                      {/* Billing Zip Code */}
+                      <div className="space-y-2">
+                        <Label htmlFor="zipCode" className="text-gray-700 font-medium">Billing ZIP Code</Label>
+                        <Input
+                          id="zipCode"
+                          name="zipCode"
+                          placeholder="12345"
+                          value={formData.zipCode}
+                          onChange={handleInputChange}
+                          className={`${errors.zipCode ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"}`}
+                        />
+                        {errors.zipCode && <p className="text-sm text-red-500">{errors.zipCode}</p>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Terms Agreement */}
+                <div className="mt-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <div className="flex items-start space-x-2">
+                    <Checkbox
+                      id="agreeToTerms"
+                      name="agreeToTerms"
+                      checked={formData.agreeToTerms}
+                      onCheckedChange={(checked) => 
+                        setFormData({...formData, agreeToTerms: checked === true})
+                      }
+                      className={errors.agreeToTerms ? "border-red-500" : ""}
+                    />
+                    <div className="space-y-1 leading-none">
+                      <Label
+                        htmlFor="agreeToTerms"
+                        className={`text-sm ${errors.agreeToTerms ? "text-red-500" : "text-blue-800"}`}
+                      >
+                        I agree to the membership terms and recurring monthly charge of $5 for this additional service category.
+                        This fee will be charged on my next billing date.
+                      </Label>
+                      {errors.agreeToTerms && <p className="text-xs text-red-500">{errors.agreeToTerms}</p>}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Submit & Cancel */}
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowPaymentForm(false)}
+                    className="border-gray-300 hover:bg-gray-50 w-full sm:w-auto"
+                  >
+                    <ChevronRight className="mr-2 h-4 w-4 rotate-180" />
+                    Back to Selection
+                  </Button>
+                  
+                  <Button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white shadow-md px-6 py-3 h-auto w-full sm:w-auto"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="mr-2 h-5 w-5" />
+                        Add Service to My Account
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

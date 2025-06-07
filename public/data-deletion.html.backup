@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USA Home - Data Deletion Request</title>
+    <meta http-equiv="refresh" content="0;url=https://app.usahome.com/data-deletion">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>USA Home - Data Deletion Request</h1>
+    <p>You are being redirected to our data deletion request form.</p>
+    <p>If you are not redirected automatically, please <a href="https://app.usahome.com/data-deletion">click here</a>.</p>
+    <p>
+        Alternatively, you can email your data deletion request to:
+        <a href="mailto:support@usahome.center">support@usahome.center</a>
+    </p>
+</body>
+</html>

@@ -1,0 +1,331 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 20 14.3% 4.1%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14.3% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 14.3% 4.1%;
+  --border: 20 5.9% 90%;
+  --input: 20 5.9% 90%;
+  --primary: 207 90% 54%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 60 4.8% 95.9%;
+  --secondary-foreground: 24 9.8% 10%;
+  --accent: 60 4.8% 95.9%;
+  --accent-foreground: 24 9.8% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --ring: 20 14.3% 4.1%;
+  --radius: 0.5rem;
+}
+
+/* Fix button text visibility */
+.button, 
+button, 
+[type="button"], 
+[type="reset"], 
+[type="submit"] {
+  color: inherit;
+}
+
+/* Global Mobile Spacing Optimization */
+@media (max-width: 768px) {
+  /* Eliminate white space at top of pages */
+  body, html {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: 100vh !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Force viewport to fit content exactly */
+  #root {
+    height: auto !important;
+    min-height: auto !important;
+  }
+  
+  main {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    padding-bottom: 1rem !important;
+    min-height: auto !important;
+  }
+  
+  /* Reduce overall page height and container sizes */
+  .min-h-screen {
+    min-height: auto !important;
+    height: auto !important;
+  }
+  
+  /* Eliminate bottom white space */
+  footer {
+    margin-bottom: 0 !important;
+    padding-bottom: 0.5rem !important;
+  }
+  
+  /* Force flex container to not stretch */
+  .flex-col {
+    min-height: auto !important;
+    height: fit-content !important;
+  }
+  
+  /* Aggressively eliminate bottom spacing */
+  * {
+    margin-bottom: 0 !important;
+  }
+  
+  /* Make sure pages end exactly after content */
+  body::after, html::after {
+    content: none !important;
+  }
+  
+  /* Remove any default bottom margins */
+  div, section, article {
+    margin-bottom: 0 !important;
+  }
+  
+  /* Reduce overall page padding and margins */
+  .container {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Optimize spacing between sections */
+  main > div {
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Tighten card and component spacing */
+  .space-y-4 > * + * {
+    margin-top: 1rem !important;
+  }
+  
+  .space-y-6 > * + * {
+    margin-top: 1.5rem !important;
+  }
+  
+  .space-y-8 > * + * {
+    margin-top: 2rem !important;
+  }
+  
+  /* Reduce padding in cards and components */
+  .p-4 {
+    padding: 0.75rem !important;
+  }
+  
+  .p-6 {
+    padding: 1rem !important;
+  }
+  
+  .py-4 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+  
+  .py-6 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  
+  .py-8 {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+  
+  /* Optimize button spacing */
+  .space-x-4 > * + * {
+    margin-left: 0.75rem !important;
+  }
+  
+  .gap-4 {
+    gap: 0.75rem !important;
+  }
+  
+  .gap-6 {
+    gap: 1rem !important;
+  }
+  
+  /* Reduce form spacing */
+  .space-y-2 > * + * {
+    margin-top: 0.5rem !important;
+  }
+  
+  .space-y-3 > * + * {
+    margin-top: 0.75rem !important;
+  }
+  
+  /* Optimize text spacing */
+  .mb-4 {
+    margin-bottom: 0.75rem !important;
+  }
+  
+  .mb-6 {
+    margin-bottom: 1rem !important;
+  }
+  
+  .mb-8 {
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .mt-4 {
+    margin-top: 0.75rem !important;
+  }
+  
+  .mt-6 {
+    margin-top: 1rem !important;
+  }
+  
+  .mt-8 {
+    margin-top: 1.5rem !important;
+  }
+  
+  /* Reduce line heights for better density */
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2 !important;
+  }
+  
+  p {
+    line-height: 1.4 !important;
+  }
+  
+  /* Footer specific optimizations */
+  footer .space-y-0 > * + * {
+    margin-top: 0 !important;
+  }
+  
+  footer .leading-none {
+    line-height: 1 !important;
+  }
+  
+  footer p {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  footer h4 {
+    margin-bottom: 0 !important;
+  }
+  
+  footer div {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  footer a {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    display: inline-block;
+    line-height: 1 !important;
+  }
+  
+  footer .space-y-0 {
+    gap: 0 !important;
+  }
+}
+  .dark {
+      --background: 240 10% 3.9%;
+--foreground: 0 0% 98%;
+--muted: 240 3.7% 15.9%;
+--muted-foreground: 240 5% 64.9%;
+--popover: 240 10% 3.9%;
+--popover-foreground: 0 0% 98%;
+--card: 240 10% 3.9%;
+--card-foreground: 0 0% 98%;
+--border: 240 3.7% 15.9%;
+--input: 240 3.7% 15.9%;
+--primary: 207 90% 54%;
+--primary-foreground: 211 100% 99%;
+--secondary: 240 3.7% 15.9%;
+--secondary-foreground: 0 0% 98%;
+--accent: 240 3.7% 15.9%;
+--accent-foreground: 0 0% 98%;
+--destructive: 0 62.8% 30.6%;
+--destructive-foreground: 0 0% 98%;
+--ring: 240 4.9% 83.9%;
+--radius: 0.5rem;
+  }
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+  
+  /* Custom color utility classes */
+  .text-neutral-light {
+    @apply text-gray-700 font-medium;
+  }
+  
+  .text-neutral-dark {
+    @apply text-gray-800 font-medium;
+  }
+  
+  /* House styles */
+  .clip-roof {
+    clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+  }
+  
+  /* Mobile optimizations to reduce white space */
+  @media (max-width: 768px) {
+    /* Reduce vertical spacing */
+    h1, h2, h3, h4, h5, h6 {
+      @apply mb-2;
+    }
+    
+    p {
+      @apply my-1;
+    }
+    
+    /* Make container padding smaller on mobile */
+    .container {
+      @apply px-2 py-2;
+    }
+    
+    /* Reduce card padding */
+    .card {
+      @apply p-3;
+    }
+    
+    /* Smaller text on mobile */
+    body {
+      @apply text-sm;
+    }
+    
+    /* Reduce margins between sections */
+    section + section {
+      @apply mt-2;
+    }
+    
+    /* Reduce form element spacing */
+    input, select, textarea {
+      @apply mb-2 py-1 px-2;
+    }
+    
+    /* Make buttons more compact */
+    button, .btn, [type="button"], [type="submit"], [type="reset"] {
+      @apply py-1 px-3 text-sm;
+    }
+  }
+  
+  /* Preserve house illustration design */
+  .home-illustration {
+    @apply w-full max-w-4xl mx-auto mb-8 p-4;
+  }
+}
+

@@ -1,0 +1,899 @@
+import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
+import { NavigationState } from "@/App";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/hooks/useLanguage";
+// Using direct SVG approach instead of component
+import { 
+  Search,
+  DollarSign,
+  ChevronLeft
+} from "lucide-react";
+
+type FinanceRealEstateProps = {
+  setNavState: React.Dispatch<React.SetStateAction<NavigationState>>;
+  navState?: NavigationState; // Make navState optional since it might not be provided
+  categoryParam?: string; // Added: parameter from URL for direct category access
+};
+
+type FinanceCategory = {
+  letter: string;
+  name: string;
+  translationKey?: string;
+  services: FinanceService[];
+};
+
+type FinanceService = {
+  name: string;
+  icon: string;
+  description: string;
+};
+
+// Comprehensive finance and real estate professionals organized by functional categories
+const financeServiceCategories: FinanceCategory[] = [
+  {
+    letter: "C",
+    name: "Credit Repair & Debt Management Specialists",
+    translationKey: "credit_repair_debt_management",
+    services: [
+      {
+        name: "Credit Repair Expert",
+        icon: "RefreshCw", // Using consistent icon names
+        description: "Specialized professionals who help restore and improve your credit score through legitimate dispute processes and credit rebuilding strategies."
+      },
+      {
+        name: "Debt Management Counselor",
+        icon: "CreditCard", // Using consistent icon names
+        description: "Financial professionals who create personalized plans to help you manage and reduce your debt through budgeting, consolidation, and negotiation."
+      },
+      {
+        name: "Credit Score Analyst",
+        icon: "BarChart", // Using consistent icon names
+        description: "Professionals who analyze your credit report to identify issues and develop a personalized plan to improve your credit score."
+      },
+      {
+        name: "Credit Dispute Specialist",
+        icon: "FileText", // Using consistent icon names
+        description: "Experts who help you dispute inaccurate or unfair items on your credit report to improve your overall credit score."
+      },
+      {
+        name: "Credit Rebuilding Advisor",
+        icon: "TrendingUp", // Using consistent icon names
+        description: "Professionals who help you develop healthy credit habits and implement strategies to rebuild your credit after financial hardship."
+      }
+    ]
+  },
+  {
+    letter: "1",
+    name: "Mortgage & Loan Professionals",
+    translationKey: "mortgage_loan_professionals",
+    services: [
+      {
+        name: "Mortgage Broker",
+        icon: "Users",
+        description: "Expert professionals who connect you with the best mortgage rates and terms for your specific needs."
+      },
+      {
+        name: "Loan Officer",
+        icon: "FileText",
+        description: "Financial specialists who help you navigate various loan options for home purchases and refinancing."
+      },
+      {
+        name: "Mortgage Banker",
+        icon: "Building",
+        description: "Banking professionals who directly fund mortgage loans and manage the entire lending process."
+      },
+      {
+        name: "FHA Loan Specialist",
+        icon: "Award",
+        description: "Experts in government-backed loans designed for first-time homebuyers with lower down payment requirements."
+      }
+    ]
+  },
+  {
+    letter: "2",
+    name: "Construction Finance Experts",
+    translationKey: "construction_finance_experts",
+    services: [
+      {
+        name: "Construction Loan Specialist",
+        icon: "Building",
+        description: "Financial professionals specializing in securing funding for new home construction projects."
+      },
+      {
+        name: "Building Project Financier",
+        icon: "DollarSign",
+        description: "Experts who help arrange comprehensive financing packages for large construction projects."
+      },
+      {
+        name: "Architectural Finance Consultant",
+        icon: "PenTool",
+        description: "Specialists who connect architectural firms with appropriate financing options for clients."
+      },
+      {
+        name: "Contractor Finance Advisor",
+        icon: "Wrench",
+        description: "Financial professionals who help contractors secure project funding and manage payment schedules."
+      }
+    ]
+  },
+  {
+    letter: "3",
+    name: "Home Improvement Financing",
+    translationKey: "home_improvement_financing",
+    services: [
+      {
+        name: "Renovation Loan Specialist",
+        icon: "Home",
+        description: "Experts in securing financing options specifically for home renovation and remodeling projects."
+      },
+      {
+        name: "Home Improvement Financial Advisor",
+        icon: "TrendingUp",
+        description: "Professionals who help homeowners plan and finance their property improvement projects."
+      },
+      {
+        name: "HELOC Specialist",
+        icon: "CreditCard",
+        description: "Experts in home equity lines of credit who help homeowners leverage their property value for renovations."
+      },
+      {
+        name: "Green Improvement Financier",
+        icon: "Leaf",
+        description: "Specialists in obtaining loans and incentives for energy-efficient home improvements."
+      }
+    ]
+  },
+  {
+    letter: "4",
+    name: "Equity, Refinance & Debt Specialists",
+    translationKey: "equity_refinance_debt",
+    services: [
+      {
+        name: "Refinance Specialist",
+        icon: "RefreshCw",
+        description: "Professionals who help homeowners replace existing mortgages with better terms or rates."
+      },
+      {
+        name: "Equity Release Consultant",
+        icon: "Unlock",
+        description: "Experts who help homeowners access the value in their property without selling."
+      },
+      {
+        name: "Debt Consolidation Advisor",
+        icon: "FileText",
+        description: "Financial professionals who help combine multiple debts into a single, more manageable payment."
+      },
+      {
+        name: "Debt Settlement Negotiator",
+        icon: "Scale",
+        description: "Specialists who negotiate with creditors to reduce the total amount of debt owed before developing a repayment plan."
+      },
+      {
+        name: "Cash-Out Refinance Specialist",
+        icon: "DollarSign",
+        description: "Experts who help homeowners replace their mortgage with a larger loan to access equity in cash."
+      }
+    ]
+  },
+  {
+    letter: "5",
+    name: "First-Time Buyer & Credit Specialists",
+    translationKey: "first_time_buyer_credit",
+    services: [
+      {
+        name: "First-Time Homebuyer Counselor",
+        icon: "Users",
+        description: "Professionals who guide first-time buyers through the entire home purchasing process."
+      },
+      {
+        name: "Down Payment Assistance Specialist",
+        icon: "PiggyBank",
+        description: "Experts in programs that provide financial aid to help cover the initial down payment on a home purchase."
+      },
+      {
+        name: "Credit Repair Expert",
+        icon: "RefreshCw",
+        description: "Specialized professionals who help restore and improve your credit score through legitimate dispute processes and credit rebuilding strategies."
+      },
+      {
+        name: "Affordable Housing Consultant",
+        icon: "Home",
+        description: "Specialists who connect buyers with affordable housing options and associated financing programs."
+      }
+    ]
+  },
+  {
+    letter: "6",
+    name: "Real Estate Investment Experts",
+    translationKey: "real_estate_investment_experts",
+    services: [
+      {
+        name: "Investment Property Specialist",
+        icon: "Building",
+        description: "Financial advisors who focus on helping clients purchase and finance income-producing properties."
+      },
+      {
+        name: "REIT Advisor",
+        icon: "BarChart",
+        description: "Professionals specializing in real estate investment trusts and other property-based securities."
+      },
+      {
+        name: "Property Portfolio Manager",
+        icon: "Grid",
+        description: "Experts who manage multiple investment properties and their associated financial considerations."
+      },
+      {
+        name: "Real Estate Investment Consultant",
+        icon: "TrendingUp",
+        description: "Strategic advisors for individuals looking to build wealth through property investments."
+      }
+    ]
+  },
+  {
+    letter: "7",
+    name: "Real Estate & Property Professionals",
+    translationKey: "real_estate_property_professionals",
+    services: [
+      {
+        name: "Real Estate Agent",
+        icon: "Home",
+        description: "Licensed professionals who help buyers and sellers navigate the real estate market."
+      },
+      {
+        name: "Property Appraiser",
+        icon: "Search",
+        description: "Experts who determine the market value of properties for financing, selling, or tax purposes."
+      },
+      {
+        name: "Escrow Officer",
+        icon: "Shield",
+        description: "Professionals who manage the transfer of funds and documents during property transactions."
+      },
+      {
+        name: "Real Estate Attorney",
+        icon: "FileText",
+        description: "Legal professionals specializing in property transactions, contracts, and real estate law."
+      }
+    ]
+  },
+  {
+    letter: "8",
+    name: "Financial Planning & Tax Experts",
+    translationKey: "financial_planning_tax_experts",
+    services: [
+      {
+        name: "Financial Planner",
+        icon: "Calendar",
+        description: "Comprehensive financial advisors who help with budgeting, investments, and long-term planning for homeownership."
+      },
+      {
+        name: "Property Tax Consultant",
+        icon: "FileText",
+        description: "Specialists who help homeowners manage and potentially reduce their property tax obligations."
+      },
+      {
+        name: "Credit Repair Expert",
+        icon: "RefreshCw",
+        description: "Specialized professionals who help restore and improve your credit score through legitimate dispute processes and credit rebuilding strategies."
+      },
+      {
+        name: "Estate Planning Attorney",
+        icon: "Book",
+        description: "Legal experts who help homeowners plan for the future of their property and assets."
+      }
+    ]
+  }
+];
+
+const FinanceRealEstate = ({ 
+  setNavState, 
+  navState = { currentView: 'finance', breadcrumb: { primary: null, secondary: null, tertiary: null } },
+  categoryParam 
+}: FinanceRealEstateProps) => {
+  const [_, setLocation] = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<FinanceCategory | null>(null);
+  const [showAllCategories, setShowAllCategories] = useState(true);
+  
+  // Using the useLanguage hook properly
+  const { t } = useLanguage();
+
+  // Update navigation state when landing on this page directly
+  useEffect(() => {
+    console.log("=== FINANCE PAGE LOADED ===");
+    console.log("Setting navigation state in FinanceRealEstate component");
+    
+    // Check if we have a category parameter from the URL
+    if (categoryParam) {
+      console.log("Category parameter from URL:", categoryParam);
+      
+      // Find the matching category in our data
+      const matchingCategory = financeServiceCategories.find(
+        cat => cat.name === categoryParam
+      );
+      
+      console.log("Found matching category for URL param?", !!matchingCategory);
+      
+      if (matchingCategory) {
+        // Set navigation state to show we're viewing this category
+        setNavState({
+          currentView: 'subcategories',
+          breadcrumb: {
+            primary: t('finance_real_estate'),
+            secondary: matchingCategory.name,
+            tertiary: null
+          }
+        });
+        
+        // Show the services for this category
+        setSelectedCategory(matchingCategory);
+        setShowAllCategories(false);
+        
+        // Store the selected category for back navigation
+        try {
+          let categoryToStore = {
+            name: matchingCategory.name,
+            letter: matchingCategory.letter,
+            translationKey: matchingCategory.translationKey || null
+          };
+          
+          sessionStorage.setItem('financeSelectedCategory', JSON.stringify(categoryToStore));
+          console.log("Stored category in session storage:", matchingCategory.name);
+        } catch (e) {
+          console.error("Failed to store category in session storage:", e);
+        }
+        
+        // Skip the rest of the effect since we've already set up the view
+        return;
+      }
+    }
+
+    // If no category parameter or no matching category, check for stored category 
+    // or show the default view
+    
+    // Check if we have a stored selected category from a previous visit
+    try {
+      const storedCategoryJson = sessionStorage.getItem('financeSelectedCategory');
+      console.log("Found stored category in session storage?", !!storedCategoryJson);
+      
+      if (storedCategoryJson) {
+        const storedCategory = JSON.parse(storedCategoryJson);
+        console.log("Stored finance category:", storedCategory.name);
+        
+        // Find the matching category in our data
+        const matchingCategory = financeServiceCategories.find(
+          cat => cat.name === storedCategory.name
+        );
+        
+        console.log("Found matching category in data?", !!matchingCategory);
+        
+        if (matchingCategory) {
+          console.log("On main finance page, showing all categories by default");
+          // We're showing all categories initially, but the stored data is there
+          // if the user returns from another page
+        } else {
+          console.log("Stored category not found in current finance categories. Clearing stored value.");
+          // If we found the stored category but couldn't match it, clear it
+          sessionStorage.removeItem('financeSelectedCategory');
+        }
+      }
+    } catch (e) {
+      console.error("Error restoring finance category:", e);
+    }
+    
+    // Default navigation state setting (no category param or stored category)
+    // We're showing all categories
+    setShowAllCategories(true);
+    setSelectedCategory(null);
+    console.log("Setting default navigation state");
+    setNavState({
+      currentView: 'finance',
+      breadcrumb: {
+        primary: t('finance_real_estate'),
+        secondary: null,
+        tertiary: null
+      }
+    });
+    
+  }, [categoryParam, setNavState, t, financeServiceCategories]);
+
+  const handleBackClick = () => {
+    if (selectedCategory) {
+      // Go back to the category list if a category is selected
+      setSelectedCategory(null);
+      setShowAllCategories(true);
+      
+      // Update navigation state to remove secondary breadcrumb
+      setNavState({
+        currentView: 'finance',
+        breadcrumb: {
+          primary: t('finance_real_estate'),
+          secondary: null,
+          tertiary: null
+        }
+      });
+      
+      // Navigate back to the main finance page
+      console.log("Navigating back to finance main page");
+      setLocation('/finance');
+    } else {
+      // Go back to the homepage with house illustration (not directly to /)
+      setNavState({
+        currentView: 'homepage',
+        breadcrumb: {
+          primary: null,
+          secondary: null,
+          tertiary: null
+        }
+      });
+      
+      // Clear stored category when leaving finance section
+      try {
+        sessionStorage.removeItem('financeSelectedCategory');
+      } catch (e) {
+        console.error("Failed to clear stored category:", e);
+      }
+      
+      // This is the main page with the house illustration
+      console.log("Navigating back to home page");
+      setLocation('/');
+    }
+  };
+
+  const handleCategoryClick = (category: FinanceCategory) => {
+    console.log("Category clicked:", category.name);
+    
+    // Update the navigation state to reflect we're in a subcategory
+    setNavState({
+      currentView: 'subcategories', // This indicates we're viewing a subcategory
+      breadcrumb: {
+        primary: t('finance_real_estate'),
+        secondary: category.name,
+        tertiary: null
+      }
+    });
+    
+    // Store the category in session storage for back navigation
+    try {
+      let categoryToStore = {
+        name: category.name,
+        letter: category.letter,
+        translationKey: category.translationKey || null
+      };
+      
+      sessionStorage.setItem('financeSelectedCategory', JSON.stringify(categoryToStore));
+    } catch (e) {
+      console.error("Failed to store category in session storage:", e);
+    }
+    
+    // Navigate to a category-specific URL
+    const encodedCategoryName = encodeURIComponent(category.name);
+    console.log(`Navigating to /finance/category/${encodedCategoryName}`);
+    setLocation(`/finance/category/${encodedCategoryName}`);
+  };
+  
+  // Helper function to navigate to professional listing with proper navigation state
+  const navigateToProfessionalListing = (service: any, categoryName: string) => {
+    // Update navigation state to properly track where we are coming from
+    // This ensures proper back button functionality
+    console.log("=== NAVIGATING TO FINANCE PROFESSIONAL ===");
+    console.log("Navigation details:", {
+      service: service.name,
+      categoryName,
+      from: 'finance',
+      selectedCategory: selectedCategory ? selectedCategory.name : null
+    });
+    
+    // If we're viewing from a specific category, preserve that in the breadcrumb
+    // This way when clicking "Back" it can return to the right category view
+    setNavState({
+      currentView: 'third-level',
+      breadcrumb: {
+        primary: t('finance_real_estate'),
+        secondary: selectedCategory ? selectedCategory.name : categoryName,
+        tertiary: service.name
+      }
+    });
+    
+    // Always store category information, whether it comes from the selected category
+    // or is passed directly as a parameter. This ensures we can always navigate back.
+    try {
+      let categoryToStore;
+      
+      if (selectedCategory) {
+        // If we're in a category view, use that selected category
+        categoryToStore = {
+          name: selectedCategory.name,
+          letter: selectedCategory.letter,
+          translationKey: selectedCategory.translationKey || null
+        };
+      } else {
+        // If we're coming from search, find the category this service belongs to
+        const serviceCategory = financeServiceCategories.find(category => {
+          return category.services.some(s => s.name === service.name);
+        });
+        
+        if (serviceCategory) {
+          categoryToStore = {
+            name: serviceCategory.name,
+            letter: serviceCategory.letter,
+            translationKey: serviceCategory.translationKey || null
+          };
+        } else {
+          // Fallback - store just the category name if we can't find complete info
+          categoryToStore = {
+            name: categoryName,
+            letter: "?",
+            translationKey: null
+          };
+        }
+      }
+      
+      console.log("Storing category in session storage:", categoryToStore);
+      sessionStorage.setItem('financeSelectedCategory', JSON.stringify(categoryToStore));
+      
+    } catch (e) {
+      console.error("Failed to store category in session storage:", e);
+    }
+    
+    // Navigate directly to the professionals page with the service name
+    // Using a different path format since these aren't regular subcategories
+    setLocation(`/find-professionals/${encodeURIComponent(service.name)}`);
+  };
+
+  // Get all services for searching
+  const allServices = financeServiceCategories.flatMap(category => 
+    category.services.map(service => ({
+      ...service,
+      category: category.name
+    }))
+  );
+
+  // Filter services based on search query
+  const filteredServices = allServices.filter(service => {
+    if (!searchQuery.trim()) return false; // Only show search results if there's a query
+    return service.name.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  // Get filtered categories for the main view
+  const filteredCategories = financeServiceCategories.filter(category => {
+    if (!searchQuery.trim()) return true;
+    
+    // Search in category name
+    if (category.name.toLowerCase().includes(searchQuery.toLowerCase())) return true;
+    
+    // Search in services
+    const matchingServices = category.services.filter(service => 
+      service.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
+    return matchingServices.length > 0;
+  });
+
+  // Using direct SVG rendering for icons instead of components to ensure visibility
+
+  return (
+    <div className="py-8 px-4 md:px-6">
+      <div className="text-center mb-8">
+        <svg 
+          className="w-16 h-16 text-accent mb-4 mx-auto" 
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+        >
+          <rect x="3" y="8" width="18" height="12" rx="2" ry="2"></rect>
+          <path d="M19 8V6c0-1.1-.9-2-2-2H7a2 2 0 0 0-2 2v2"></path>
+          <path d="M12 15a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path>
+        </svg>
+        <h2 className="text-3xl font-heading font-bold text-neutral mb-4">
+          {selectedCategory 
+            ? `${selectedCategory.letter} - ${selectedCategory.translationKey ? t(selectedCategory.translationKey) : selectedCategory.name}` 
+            : t('find_finance_professionals')}
+        </h2>
+
+        <p className="text-lg max-w-2xl mx-auto mb-4">
+          {selectedCategory 
+            ? t('connect_with_category').replace(
+                '{category}', 
+                (selectedCategory.translationKey ? t(selectedCategory.translationKey) : selectedCategory.name).toLowerCase()
+              )
+            : t('find_connect_finance_professionals')}
+        </p>
+
+      </div>
+
+      <div className="mb-8">
+        <div className="relative max-w-md mx-auto">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <Input
+            type="search"
+            placeholder={t('search_finance_professionals')}
+            className="pl-10 py-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {searchQuery.trim() && filteredServices.length > 0 ? (
+        // Show search results
+        <div>
+          <h3 className="text-xl font-semibold mb-4 text-center">{t('search_results')}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {filteredServices.map((service, index) => (
+              <Card 
+                key={index} 
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => navigateToProfessionalListing(service, service.category)}
+              >
+                <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                  <div className="bg-accent/10 p-2 rounded-full">
+                    {/* Embed SVG icon directly */}
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="24" 
+                      height="24" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className="text-accent"
+                    >
+                      {/* Different icon paths based on service type */}
+                      {service.name.includes("Credit") && (
+                        <>
+                          {/* Refresh icon for credit repair */}
+                          <path d="M23 4v6h-6"></path>
+                          <path d="M1 20v-6h6"></path>
+                          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
+                          <path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </>
+                      )}
+                      {service.name.includes("Debt") && (
+                        <>
+                          {/* Credit card icon for debt related */}
+                          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                          <line x1="1" y1="10" x2="23" y2="10"></line>
+                        </>
+                      )}
+                      {(service.name.includes("Mortgage") || service.name.includes("Loan")) service.name.includes("Mortgage") || service.name.includes("Loan") &&service.name.includes("Mortgage") || service.name.includes("Loan") && (
+                        <>
+                          {/* Dollar icon for mortgage/loans */}
+                          <line x1="12" y1="1" x2="12" y2="23"></line>
+                          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </>
+                      )}
+                      {/* Default dollar icon if no specific match */}
+                      {!service.name.includes("Credit") && !service.name.includes("Debt") && 
+                        !service.name.includes("Mortgage") && !service.name.includes("Loan") && (
+                        <>
+                          <line x1="12" y1="1" x2="12" y2="23"></line>
+                          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </>
+                      )}
+                    </svg>
+                  </div>
+                  <CardTitle className="text-xl font-medium">
+                    {service.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-neutral-light">
+                    {service.description}
+                  </p>
+                  <p className="text-sm text-accent mt-2">
+                    {t('category')}: {service.category}
+                  </p>
+                  <div className="mt-4">
+                    <Badge 
+                      className="bg-primary text-white hover:bg-primary-dark border-primary transition-colors cursor-pointer px-3 py-1 text-sm font-medium"
+                    >
+                      {t('find_professionals')}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      ) : showAllCategories ? (
+        // Show all categories
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {filteredCategories.map((category, index) => (
+            <Card 
+              key={index} 
+              className="cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => handleCategoryClick(category)}
+            >
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-4">
+                  <div className="bg-accent/10 p-2 rounded-full w-12 h-12 flex items-center justify-center">
+                    {/* Embed the dollar sign SVG directly */}
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="24" 
+                      height="24" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className="text-accent"
+                    >
+                      <line x1="12" y1="1" x2="12" y2="23"></line>
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                  </div>
+                  <CardTitle className="text-xl font-medium">
+                    {category.name}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-neutral-light">
+                  {t('professional_types_count')
+                    .replace('{count}', category.services.length.toString())
+                    .replace('{services}', category.services.slice(0, 2).map(s => s.name.toLowerCase()).join(', '))}
+                </p>
+
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : selectedCategory ? (
+        // Show selected category services - added explicit selectedCategory check
+        <div>
+          {/* "Back to Categories" button centered at the top */}
+          <div className="flex justify-center mb-6">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={() => {
+                setShowAllCategories(true);
+                setSelectedCategory(null);
+              }}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              {t('back_to_categories')}
+            </Button>
+          </div>
+          
+          {/* Category title centered */}
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-4">{selectedCategory.name}</h2>
+            <p className="text-lg text-center mx-auto max-w-2xl">
+              {t('connect_with_category')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {selectedCategory.services.map((service, index) => (
+              <Card 
+                key={index} 
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => navigateToProfessionalListing(service, selectedCategory.name)}
+              >
+                <CardHeader className="flex flex-col items-center text-center pb-2">
+                  <div className="bg-accent/10 p-5 rounded-full mb-3 w-16 h-16 flex items-center justify-center">
+                    {/* Embed SVG icon directly */}
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="24" 
+                      height="24" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className="text-accent"
+                    >
+                      {/* Different icon paths based on service type */}
+                      {service.name.includes("Credit") && (
+                        <>
+                          {/* Refresh icon for credit repair */}
+                          <path d="M23 4v6h-6"></path>
+                          <path d="M1 20v-6h6"></path>
+                          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
+                          <path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </>
+                      )}
+                      {service.name.includes("Debt") && (
+                        <>
+                          {/* Credit card icon for debt related */}
+                          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                          <line x1="1" y1="10" x2="23" y2="10"></line>
+                        </>
+                      )}
+                      {(service.name.includes("Mortgage") || service.name.includes("Loan")) service.name.includes("Mortgage") || service.name.includes("Loan") &&service.name.includes("Mortgage") || service.name.includes("Loan") && (
+                        <>
+                          {/* Dollar icon for mortgage/loans */}
+                          <line x1="12" y1="1" x2="12" y2="23"></line>
+                          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </>
+                      )}
+                      {/* Default dollar icon if no specific match */}
+                      {!service.name.includes("Credit") && !service.name.includes("Debt") && 
+                        !service.name.includes("Mortgage") && !service.name.includes("Loan") && (
+                        <>
+                          <line x1="12" y1="1" x2="12" y2="23"></line>
+                          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </>
+                      )}
+                    </svg>
+                  </div>
+                  <CardTitle className="text-xl font-medium">
+                    {service.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-neutral-light mb-4">
+                    {service.description}
+                  </p>
+                  <div className="mt-4 flex justify-center">
+                    <Badge 
+                      className="bg-primary text-white hover:bg-primary-dark border-primary transition-colors cursor-pointer px-4 py-1.5 text-sm font-medium"
+                    >
+                      {t('find_professionals')}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      ) : (
+        // Fallback - show categories if something went wrong
+        <div className="text-center">
+          <p className="mb-4">{t('category_not_found')}</p>
+          <Button onClick={() => setShowAllCategories(true)}>
+            {t('back_to_categories')}
+          </Button>
+        </div>
+      )}
+
+      {searchQuery.trim() && filteredServices.length === 0 && (
+        <div className="text-center py-8">
+          <p className="text-neutral-light">{t('no_finance_professionals_found')}</p>
+        </div>
+      )}
+
+      <div className="mt-12 text-center">
+        <Button
+          onClick={handleBackClick}
+          className="bg-primary text-white hover:bg-primary-dark font-button py-2 px-6 rounded-lg transition-colors flex items-center mx-auto"
+        >
+          <svg 
+            className="w-4 h-4 mr-2" 
+            xmlns="http://www.w3.org/2000/svg" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <path d="M19 12H5"></path>
+            <path d="M12 19l-7-7 7-7"></path>
+          </svg>
+          {t('back')}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default FinanceRealEstate;
