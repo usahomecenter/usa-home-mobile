@@ -19,7 +19,7 @@ workflows:
           npm install
       - name: Capacitor build
         script: |
-          npm run build
+          npx vite build
           npx cap sync ios
       - name: Set up keychain
         script: |
