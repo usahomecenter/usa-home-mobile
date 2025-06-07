@@ -28,7 +28,7 @@ const config: CapacitorConfig = {
     appendUserAgent: 'USAHomeApp/1.1.0',
     initialFocus: true, // Set focus to web view on start
     // Google Play specific
-    overrideUserAgent: ''
+overrideUserAgent: '',
     // Deep links configuration to be added in Android Studio directly
   },
   ios: {
@@ -38,7 +38,7 @@ const config: CapacitorConfig = {
     limitsNavigationsToAppBoundDomains: true,
     // iOS specific configurations
     preferredContentMode: 'mobile',
-    appendUserAgent: 'USAHomeApp/1.1.0'
+    appendUserAgent: 'USAHomeApp/1.1.0',
     // App Store specific additional configurations should be set directly in Xcode
   },
   plugins: {
