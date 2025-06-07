@@ -15,11 +15,11 @@ workflows:
       - name: Install dependencies
         script: |
           npm ci
-      - name: Create proper build structure
+      - name: Create build in correct location
         script: |
-          mkdir -p dist
-          mkdir -p dist/assets
-          cat > dist/index.html << 'EOF'
+          mkdir -p client/dist
+          mkdir -p client/dist/assets
+          cat > client/dist/index.html << 'EOF'
           <!DOCTYPE html>
           <html lang="en">
           <head>
@@ -27,10 +27,39 @@ workflows:
             <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
             <title>USA Home</title>
             <style>
-              body { margin: 0; padding: 20px; font-family: system-ui; }
-              .container { text-align: center; margin-top: 50px; }
-              h1 { color: #1e3a8a; margin-bottom: 20px; }
-              p { color: #64748b; }
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+              .container { 
+                text-align: center; 
+                padding: 40px 20px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+              }
+              h1 { 
+                font-size: 2.5rem; 
+                margin-bottom: 20px; 
+                font-weight: 700;
+              }
+              p { 
+                font-size: 1.1rem; 
+                margin-bottom: 10px; 
+                opacity: 0.9;
+              }
+              .version { 
+                font-size: 0.9rem; 
+                opacity: 0.7; 
+                margin-top: 20px;
+              }
             </style>
           </head>
           <body>
@@ -38,26 +67,27 @@ workflows:
               <div class="container">
                 <h1>USA Home</h1>
                 <p>Home Building, Design & Finance Platform</p>
-                <p>Version 1.0</p>
+                <p>Connecting homeowners with professionals</p>
+                <div class="version">Version 1.0 - iOS App</div>
               </div>
             </div>
           </body>
           </html>
           EOF
           
-          cat > dist/manifest.json << 'EOF'
+          cat > client/dist/manifest.json << 'EOF'
           {
             "name": "USA Home",
             "short_name": "USA Home",
             "start_url": "/",
             "display": "standalone",
-            "background_color": "#ffffff",
-            "theme_color": "#1e3a8a",
+            "background_color": "#667eea",
+            "theme_color": "#764ba2",
             "icons": []
           }
           EOF
           
-          ls -la dist/
+          ls -la client/dist/
       - name: Capacitor sync
         script: |
           npx cap sync ios --verbose
