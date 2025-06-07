@@ -1,92 +1,67 @@
-name: iOS Build
+name: iOS Build Streamlined
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-latest
     
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       
-    - name: Project structure verification
-      run: |
-        echo "Checking project structure..."
-        ls -la
-        if [ -d "ios" ]; then
-          echo "iOS directory contents:"
-          ls -la ios/
-          if [ -d "ios/App" ]; then
-            echo "App directory contents:"
-            ls -la ios/App/
-            if [ -f "ios/App/Podfile" ]; then
-              echo "✅ Podfile found"
-            fi
-            if [ -d "ios/App/App.xcodeproj" ]; then
-              echo "✅ Xcode project found"
-            fi
-            if [ -d "ios/App/App.xcworkspace" ]; then
-              echo "✅ Xcode workspace found"
-            fi
-          fi
-        fi
-        
-    - name: Install CocoaPods
-      run: |
-        sudo gem install cocoapods
-        cd ios/App
-        pod install --repo-update
-        
+    - name: List available simulators
+      run: xcrun simctl list devices available
+      
     - name: Build for simulator
       run: |
         cd ios/App
-        if [ -d "App.xcworkspace" ]; then
-          xcodebuild build \
-            -workspace App.xcworkspace \
-            -scheme App \
-            -destination "platform=iOS Simulator,name=iPhone 14" \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO
-        else
-          xcodebuild build \
-            -project App.xcodeproj \
-            -scheme App \
-            -destination "platform=iOS Simulator,name=iPhone 14" \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO
-        fi
-        
-    - name: Create archive
+        xcodebuild clean build \
+          -project App.xcodeproj \
+          -scheme App \
+          -destination "platform=iOS Simulator,OS=latest,name=iPhone 15" \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          DEVELOPMENT_TEAM="" \
+          PROVISIONING_PROFILE=""
+          
+    - name: Create unsigned archive
       run: |
         cd ios/App
         mkdir -p build
-        if [ -d "App.xcworkspace" ]; then
-          xcodebuild archive \
-            -workspace App.xcworkspace \
-            -scheme App \
-            -configuration Release \
-            -destination generic/platform=iOS \
-            -archivePath build/App.xcarchive \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+        xcodebuild archive \
+          -project App.xcodeproj \
+          -scheme App \
+          -configuration Release \
+          -destination generic/platform=iOS \
+          -archivePath build/App.xcarchive \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          DEVELOPMENT_TEAM="" \
+          PROVISIONING_PROFILE="" \
+          -allowProvisioningUpdates
+          
+    - name: Verify archive
+      run: |
+        ls -la ios/App/build/
+        if [ -d "ios/App/build/App.xcarchive" ]; then
+          echo "Archive created successfully"
+          ls -la ios/App/build/App.xcarchive/
         else
-          xcodebuild archive \
-            -project App.xcodeproj \
-            -scheme App \
-            -configuration Release \
-            -destination generic/platform=iOS \
-            -archivePath build/App.xcarchive \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+          echo "Archive creation failed"
+          exit 1
         fi
+        
+    - name: Package for download
+      run: |
+        cd ios/App/build
+        zip -r App.xcarchive.zip App.xcarchive
         
     - name: Upload archive
       uses: actions/upload-artifact@v4
       with:
-        name: ios-app-archive
-        path: ios/App/build/App.xcarchive
+        name: usa-home-ios-app
+        path: ios/App/build/App.xcarchive.zip
         retention-days: 30
