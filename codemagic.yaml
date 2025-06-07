@@ -14,19 +14,17 @@ workflows:
     scripts:
       - name: Install dependencies
         script: npm ci
-      - name: Setup iOS
+      - name: Setup iOS dependencies
         script: |
           cd ios/App
           pod install --repo-update
-      - name: Create simple web content
+      - name: Prepare web assets
         script: |
-          mkdir -p client/dist
-          echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>USA Home</title><style>body{margin:0;font-family:system-ui;background:#1e3a8a;color:white;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}.app{text-align:center;background:rgba(255,255,255,0.1);padding:40px;border-radius:20px;backdrop-filter:blur(10px)}h1{font-size:2.5rem;margin-bottom:20px}p{font-size:1.1rem;margin:10px 0;opacity:0.9}</style></head><body><div class="app"><h1>USA Home</h1><p>Home Building & Design Platform</p><p>iOS Version 1.0</p></div></body></html>' > client/dist/index.html
-          echo '{"name":"USA Home","short_name":"USA Home","start_url":"/","display":"standalone"}' > client/dist/manifest.json
+          ls -la client/dist/
           npx cap sync ios
-      - name: Initialize keychain
+      - name: Setup keychain
         script: keychain initialize
-      - name: Build archive
+      - name: Build iOS archive
         script: |
           cd ios/App
           xcodebuild clean -workspace App.xcworkspace -scheme App
