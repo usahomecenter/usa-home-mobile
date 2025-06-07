@@ -15,7 +15,7 @@ workflows:
     steps:
     - git-clone@8: {}
     - script@1:
-        title: Complete iOS Build Setup
+        title: Complete iOS Build Setup with Capacitor Files
         inputs:
         - content: |
             #!/usr/bin/env bash
@@ -24,6 +24,41 @@ workflows:
             # Create web content
             mkdir -p client/dist
             echo '<!DOCTYPE html><html><head><title>USA Home</title></head><body><h1>USA Home App</h1></body></html>' > client/dist/index.html
+            
+            # Create capacitor config
+            cat > capacitor.config.json << 'EOF'
+            {
+              "appId": "com.usahome.app",
+              "appName": "USA Home",
+              "webDir": "client/dist",
+              "bundledWebRuntime": false,
+              "ios": {
+                "scheme": "App"
+              }
+            }
+            EOF
+            
+            # Copy config to iOS app directory
+            cp capacitor.config.json ios/App/App/
+            
+            # Create config.xml for iOS
+            mkdir -p ios/App/App/public
+            cat > ios/App/App/config.xml << 'EOF'
+            <?xml version='1.0' encoding='utf-8'?>
+            <widget id="com.usahome.app" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+                <name>USA Home</name>
+                <description>USA Home App</description>
+                <author email="info@usahome.com" href="https://usahome.com">USA Home Team</author>
+                <content src="index.html" />
+                <access origin="*" />
+                <allow-intent href="http://*/*" />
+                <allow-intent href="https://*/*" />
+                <platform name="ios">
+                    <allow-intent href="itms:*" />
+                    <allow-intent href="itms-apps:*" />
+                </platform>
+            </widget>
+            EOF
             
             # Fix Podfile
             cd ios/App
@@ -53,71 +88,7 @@ workflows:
             end
             EOF
             
-            echo "Setup complete"
-            
-    - cocoapods-install@2:
-        inputs:
-        - source_root_path: ios/App
-        
-    - xcode-archive@4:
-        inputs:
-        - project_path: ios/App/App.xcworkspace
-        - scheme: App
-        - configuration: Release
-        - export_method: development
-        - disable_codesign: true
-        - xcodebuild_options: CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
-        
-    - deploy-to-bitrise-io@2:
-        inputs:
-        - notify_user_groups: none
-        - is_enable_public_page: false
-
-  primary:
-    before_run: []
-    after_run: []
-    steps:
-    - git-clone@8: {}
-    - script@1:
-        title: Complete iOS Build Setup
-        inputs:
-        - content: |
-            #!/usr/bin/env bash
-            set -ex
-            
-            # Create web content
-            mkdir -p client/dist
-            echo '<!DOCTYPE html><html><head><title>USA Home</title></head><body><h1>USA Home App</h1></body></html>' > client/dist/index.html
-            
-            # Fix Podfile
-            cd ios/App
-            cat > Podfile << 'EOF'
-            platform :ios, '14.0'
-            use_frameworks!
-            install! 'cocoapods', :disable_input_output_paths => true
-            
-            target 'App' do
-              pod 'Capacitor', '~> 5.0'
-              pod 'CapacitorCordova', '~> 5.0'
-              pod 'CapacitorApp', '~> 5.0'
-              pod 'CapacitorBrowser', '~> 5.0'
-              pod 'CapacitorDevice', '~> 5.0'
-              pod 'CapacitorNetwork', '~> 5.0'
-              pod 'CapacitorPreferences', '~> 5.0'
-              pod 'CapacitorSplashScreen', '~> 5.0'
-              pod 'CapacitorStatusBar', '~> 5.0'
-            end
-            
-            post_install do |installer|
-              installer.pods_project.targets.each do |target|
-                target.build_configurations.each do |config|
-                  config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
-                end
-              end
-            end
-            EOF
-            
-            echo "Setup complete"
+            echo "Setup complete with all Capacitor files"
             
     - cocoapods-install@2:
         inputs:
