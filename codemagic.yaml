@@ -15,23 +15,55 @@ workflows:
       - name: Install dependencies
         script: |
           npm ci
-      - name: Create basic build
+      - name: Create proper build structure
         script: |
           mkdir -p dist
-          echo '<!DOCTYPE html>
-          <html>
+          mkdir -p dist/assets
+          cat > dist/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
           <head>
             <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
             <title>USA Home</title>
+            <style>
+              body { margin: 0; padding: 20px; font-family: system-ui; }
+              .container { text-align: center; margin-top: 50px; }
+              h1 { color: #1e3a8a; margin-bottom: 20px; }
+              p { color: #64748b; }
+            </style>
           </head>
           <body>
-            <div id="root">USA Home App Loading...</div>
+            <div id="root">
+              <div class="container">
+                <h1>USA Home</h1>
+                <p>Home Building, Design & Finance Platform</p>
+                <p>Version 1.0</p>
+              </div>
+            </div>
           </body>
-          </html>' > dist/index.html
+          </html>
+          EOF
+          
+          cat > dist/manifest.json << 'EOF'
+          {
+            "name": "USA Home",
+            "short_name": "USA Home",
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#1e3a8a",
+            "icons": []
+          }
+          EOF
+          
+          ls -la dist/
       - name: Capacitor sync
         script: |
-          npx cap sync ios
+          npx cap sync ios --verbose
+      - name: Set up keychain
+        script: |
+          keychain initialize
       - name: Build ipa
         script: |
           xcode-project build-ipa \
@@ -39,3 +71,4 @@ workflows:
             --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
