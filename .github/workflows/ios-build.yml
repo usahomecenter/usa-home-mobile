@@ -1,0 +1,120 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Create web build
+      run: |
+        mkdir -p client/dist
+        cat > client/dist/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+          <meta name="apple-mobile-web-app-capable" content="yes">
+          <title>USA Home</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+              background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+              color: white;
+              min-height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 20px;
+            }
+            .container { 
+              text-align: center;
+              background: rgba(255, 255, 255, 0.1);
+              padding: 50px 30px;
+              border-radius: 20px;
+              backdrop-filter: blur(10px);
+              max-width: 350px;
+              width: 100%;
+            }
+            h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; }
+            .tagline { font-size: 1.1rem; margin-bottom: 15px; opacity: 0.9; }
+            .description { font-size: 0.95rem; margin-bottom: 25px; opacity: 0.8; }
+            .version { 
+              font-size: 0.85rem; 
+              opacity: 0.7;
+              background: rgba(255, 255, 255, 0.1);
+              padding: 8px 16px;
+              border-radius: 12px;
+              display: inline-block;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>USA Home</h1>
+            <p class="tagline">Home Building & Design</p>
+            <p class="description">Connecting homeowners with professionals</p>
+            <div class="version">iOS Version 1.0</div>
+          </div>
+        </body>
+        </html>
+        EOF
+        
+        echo '{"name":"USA Home","short_name":"USA Home","start_url":"/","display":"standalone"}' > client/dist/manifest.json
+        
+    - name: Sync Capacitor
+      run: npx cap sync ios
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: Install CocoaPods
+      run: |
+        cd ios/App
+        pod install
+        
+    - name: Build iOS app
+      run: |
+        cd ios/App
+        xcodebuild clean \
+          -workspace App.xcworkspace \
+          -scheme App
+        
+        xcodebuild archive \
+          -workspace App.xcworkspace \
+          -scheme App \
+          -configuration Release \
+          -destination generic/platform=iOS \
+          -archivePath build/App.xcarchive \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          PROVISIONING_PROFILE=""
+          
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-build
+        path: ios/App/build/App.xcarchive
+        retention-days: 30
