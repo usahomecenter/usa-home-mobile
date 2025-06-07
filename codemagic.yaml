@@ -12,22 +12,23 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Install dependencies
-        script: |
-          npm ci
-      - name: Install CocoaPods
+      - name: Install npm dependencies
+        script: npm ci
+      - name: Configure iOS dependencies
         script: |
           cd ios/App
           pod install --repo-update
-      - name: Create web content
+      - name: Create optimized web build
         script: |
           mkdir -p client/dist
-          cat > client/dist/index.html << 'EOF'
+          cat > client/dist/index.html << 'HTML'
           <!DOCTYPE html>
           <html lang="en">
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+            <meta name="apple-mobile-web-app-capable" content="yes">
+            <meta name="apple-mobile-web-app-status-bar-style" content="default">
             <title>USA Home</title>
             <style>
               * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -44,33 +45,33 @@ workflows:
               .container { 
                 text-align: center;
                 background: rgba(255, 255, 255, 0.1);
-                padding: 60px 40px;
-                border-radius: 24px;
+                padding: 50px 30px;
+                border-radius: 20px;
                 backdrop-filter: blur(10px);
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-                max-width: 400px;
+                max-width: 350px;
                 width: 100%;
               }
               h1 { 
-                font-size: 2.8rem; 
+                font-size: 2.5rem; 
                 font-weight: 700;
-                margin-bottom: 16px;
+                margin-bottom: 20px;
                 letter-spacing: -1px;
               }
               .tagline { 
-                font-size: 1.2rem; 
-                margin-bottom: 12px;
+                font-size: 1.1rem; 
+                margin-bottom: 15px;
                 opacity: 0.9;
                 font-weight: 500;
               }
               .description { 
-                font-size: 1rem; 
-                margin-bottom: 24px;
+                font-size: 0.95rem; 
+                margin-bottom: 25px;
                 opacity: 0.8;
-                line-height: 1.5;
+                line-height: 1.4;
               }
               .version { 
-                font-size: 0.9rem; 
+                font-size: 0.85rem; 
                 opacity: 0.7;
                 background: rgba(255, 255, 255, 0.1);
                 padding: 8px 16px;
@@ -84,33 +85,39 @@ workflows:
               <h1>USA Home</h1>
               <p class="tagline">Home Building & Design</p>
               <p class="description">Connecting homeowners with professionals across America</p>
-              <div class="version">Version 1.0 - iOS</div>
+              <div class="version">iOS Version 1.0</div>
             </div>
           </body>
           </html>
-          EOF
-      - name: Set up keychain
-        script: |
-          keychain initialize
-      - name: Build for simulator
-        script: |
-          cd ios/App
-          xcodebuild -workspace App.xcworkspace \
-                     -scheme App \
-                     -configuration Debug \
-                     -destination "platform=iOS Simulator,name=iPhone 14" \
-                     build
-      - name: Archive for distribution
+          HTML
+          
+          echo '{"name":"USA Home","short_name":"USA Home","start_url":"/","display":"standalone","background_color":"#1e3a8a","theme_color":"#3b82f6"}' > client/dist/manifest.json
+          
+          npx cap sync ios
+      - name: Setup build environment
+        script: keychain initialize
+      - name: Build iOS archive
         script: |
           cd ios/App
-          xcodebuild -workspace App.xcworkspace \
-                     -scheme App \
-                     -configuration Release \
-                     -destination generic/platform=iOS \
-                     -archivePath build/App.xcarchive \
-                     archive
+          
+          xcodebuild clean \
+            -workspace App.xcworkspace \
+            -scheme App
+          
+          xcodebuild archive \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination generic/platform=iOS \
+            -archivePath build/App.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            PROVISIONING_PROFILE="" \
+            DEVELOPMENT_TEAM="" \
+            -allowProvisioningUpdates
     artifacts:
-      - ios/App/build/*.xcarchive
+      - ios/App/build/App.xcarchive
       - /tmp/xcodebuild_logs/*.log
     publishing:
       email:
