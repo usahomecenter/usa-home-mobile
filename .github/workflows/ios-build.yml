@@ -1,0 +1,92 @@
+name: iOS Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-13
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Project structure verification
+      run: |
+        echo "Checking project structure..."
+        ls -la
+        if [ -d "ios" ]; then
+          echo "iOS directory contents:"
+          ls -la ios/
+          if [ -d "ios/App" ]; then
+            echo "App directory contents:"
+            ls -la ios/App/
+            if [ -f "ios/App/Podfile" ]; then
+              echo "✅ Podfile found"
+            fi
+            if [ -d "ios/App/App.xcodeproj" ]; then
+              echo "✅ Xcode project found"
+            fi
+            if [ -d "ios/App/App.xcworkspace" ]; then
+              echo "✅ Xcode workspace found"
+            fi
+          fi
+        fi
+        
+    - name: Install CocoaPods
+      run: |
+        sudo gem install cocoapods
+        cd ios/App
+        pod install --repo-update
+        
+    - name: Build for simulator
+      run: |
+        cd ios/App
+        if [ -d "App.xcworkspace" ]; then
+          xcodebuild build \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -destination "platform=iOS Simulator,name=iPhone 14" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+        else
+          xcodebuild build \
+            -project App.xcodeproj \
+            -scheme App \
+            -destination "platform=iOS Simulator,name=iPhone 14" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+        fi
+        
+    - name: Create archive
+      run: |
+        cd ios/App
+        mkdir -p build
+        if [ -d "App.xcworkspace" ]; then
+          xcodebuild archive \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination generic/platform=iOS \
+            -archivePath build/App.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+        else
+          xcodebuild archive \
+            -project App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -destination generic/platform=iOS \
+            -archivePath build/App.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+        fi
+        
+    - name: Upload archive
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-app-archive
+        path: ios/App/build/App.xcarchive
+        retention-days: 30
