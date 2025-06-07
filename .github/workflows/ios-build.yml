@@ -9,7 +9,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Project structure verification
       run: |
@@ -85,7 +85,7 @@ jobs:
         fi
         
     - name: Upload archive
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ios-app-archive
         path: ios/App/build/App.xcarchive
