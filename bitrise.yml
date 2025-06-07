@@ -6,24 +6,31 @@ app:
   envs:
   - BITRISE_PROJECT_PATH: ios/App/App.xcworkspace
   - BITRISE_SCHEME: App
+  - BITRISE_EXPORT_METHOD: development
 
 workflows:
   run_tests:
+    before_run: []
+    after_run: []
     steps:
     - git-clone@8: {}
     - script@1:
+        title: Complete iOS Build Setup
         inputs:
         - content: |
             #!/usr/bin/env bash
             set -ex
             
+            # Create web content
             mkdir -p client/dist
-            echo '<html><head><title>USA Home</title></head><body><h1>USA Home</h1></body></html>' > client/dist/index.html
+            echo '<!DOCTYPE html><html><head><title>USA Home</title></head><body><h1>USA Home App</h1></body></html>' > client/dist/index.html
             
+            # Fix Podfile
             cd ios/App
             cat > Podfile << 'EOF'
             platform :ios, '14.0'
             use_frameworks!
+            install! 'cocoapods', :disable_input_output_paths => true
             
             target 'App' do
               pod 'Capacitor', '~> 5.0'
@@ -36,7 +43,17 @@ workflows:
               pod 'CapacitorSplashScreen', '~> 5.0'
               pod 'CapacitorStatusBar', '~> 5.0'
             end
+            
+            post_install do |installer|
+              installer.pods_project.targets.each do |target|
+                target.build_configurations.each do |config|
+                  config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+                end
+              end
+            end
             EOF
+            
+            echo "Setup complete"
             
     - cocoapods-install@2:
         inputs:
@@ -46,27 +63,38 @@ workflows:
         inputs:
         - project_path: ios/App/App.xcworkspace
         - scheme: App
+        - configuration: Release
+        - export_method: development
         - disable_codesign: true
-        - xcodebuild_options: CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+        - xcodebuild_options: CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
         
-    - deploy-to-bitrise-io@2: {}
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - notify_user_groups: none
+        - is_enable_public_page: false
 
   primary:
+    before_run: []
+    after_run: []
     steps:
     - git-clone@8: {}
     - script@1:
+        title: Complete iOS Build Setup
         inputs:
         - content: |
             #!/usr/bin/env bash
             set -ex
             
+            # Create web content
             mkdir -p client/dist
-            echo '<html><head><title>USA Home</title></head><body><h1>USA Home</h1></body></html>' > client/dist/index.html
+            echo '<!DOCTYPE html><html><head><title>USA Home</title></head><body><h1>USA Home App</h1></body></html>' > client/dist/index.html
             
+            # Fix Podfile
             cd ios/App
             cat > Podfile << 'EOF'
             platform :ios, '14.0'
             use_frameworks!
+            install! 'cocoapods', :disable_input_output_paths => true
             
             target 'App' do
               pod 'Capacitor', '~> 5.0'
@@ -79,7 +107,17 @@ workflows:
               pod 'CapacitorSplashScreen', '~> 5.0'
               pod 'CapacitorStatusBar', '~> 5.0'
             end
+            
+            post_install do |installer|
+              installer.pods_project.targets.each do |target|
+                target.build_configurations.each do |config|
+                  config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+                end
+              end
+            end
             EOF
+            
+            echo "Setup complete"
             
     - cocoapods-install@2:
         inputs:
@@ -89,7 +127,12 @@ workflows:
         inputs:
         - project_path: ios/App/App.xcworkspace
         - scheme: App
+        - configuration: Release
+        - export_method: development
         - disable_codesign: true
-        - xcodebuild_options: CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+        - xcodebuild_options: CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
         
-    - deploy-to-bitrise-io@2: {}
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - notify_user_groups: none
+        - is_enable_public_page: false
