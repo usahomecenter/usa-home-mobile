@@ -9,7 +9,7 @@ app:
   - BITRISE_EXPORT_METHOD: development
 
 workflows:
-  primary:
+  run_tests:
     description: |
       Final working iOS build for USA Home app
     steps:
@@ -60,6 +60,9 @@ workflows:
               end
             end
             EOF
+            
+            echo "Podfile created successfully"
+            cat Podfile
             
     - cocoapods-install@2:
         inputs:
