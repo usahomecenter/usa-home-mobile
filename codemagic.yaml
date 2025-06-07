@@ -12,103 +12,25 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Install npm dependencies
+      - name: Install dependencies
         script: npm ci
-      - name: Configure iOS dependencies
+      - name: Setup iOS
         script: |
           cd ios/App
           pod install --repo-update
-      - name: Create web build
+      - name: Create simple web content
         script: |
           mkdir -p client/dist
-          cat > client/dist/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-            <meta name="apple-mobile-web-app-capable" content="yes">
-            <title>USA Home</title>
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { 
-                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-                background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-                color: white;
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 20px;
-              }
-              .container { 
-                text-align: center;
-                background: rgba(255, 255, 255, 0.1);
-                padding: 50px 30px;
-                border-radius: 20px;
-                backdrop-filter: blur(10px);
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-                max-width: 350px;
-                width: 100%;
-              }
-              h1 { 
-                font-size: 2.5rem; 
-                font-weight: 700;
-                margin-bottom: 20px;
-              }
-              .tagline { 
-                font-size: 1.1rem; 
-                margin-bottom: 15px;
-                opacity: 0.9;
-              }
-              .description { 
-                font-size: 0.95rem; 
-                margin-bottom: 25px;
-                opacity: 0.8;
-              }
-              .version { 
-                font-size: 0.85rem; 
-                opacity: 0.7;
-                background: rgba(255, 255, 255, 0.1);
-                padding: 8px 16px;
-                border-radius: 12px;
-                display: inline-block;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <h1>USA Home</h1>
-              <p class="tagline">Home Building & Design</p>
-              <p class="description">Connecting homeowners with professionals</p>
-              <div class="version">iOS Version 1.0</div>
-            </div>
-          </body>
-          </html>
-          EOF
-          
+          echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>USA Home</title><style>body{margin:0;font-family:system-ui;background:#1e3a8a;color:white;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}.app{text-align:center;background:rgba(255,255,255,0.1);padding:40px;border-radius:20px;backdrop-filter:blur(10px)}h1{font-size:2.5rem;margin-bottom:20px}p{font-size:1.1rem;margin:10px 0;opacity:0.9}</style></head><body><div class="app"><h1>USA Home</h1><p>Home Building & Design Platform</p><p>iOS Version 1.0</p></div></body></html>' > client/dist/index.html
           echo '{"name":"USA Home","short_name":"USA Home","start_url":"/","display":"standalone"}' > client/dist/manifest.json
-          
           npx cap sync ios
-      - name: Setup keychain
+      - name: Initialize keychain
         script: keychain initialize
-      - name: Build iOS archive
+      - name: Build archive
         script: |
           cd ios/App
-          
-          xcodebuild clean \
-            -workspace App.xcworkspace \
-            -scheme App
-          
-          xcodebuild archive \
-            -workspace App.xcworkspace \
-            -scheme App \
-            -configuration Release \
-            -destination generic/platform=iOS \
-            -archivePath build/App.xcarchive \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+          xcodebuild clean -workspace App.xcworkspace -scheme App
+          xcodebuild archive -workspace App.xcworkspace -scheme App -configuration Release -destination generic/platform=iOS -archivePath build/App.xcarchive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
     artifacts:
       - ios/App/build/App.xcarchive
       - /tmp/xcodebuild_logs/*.log
