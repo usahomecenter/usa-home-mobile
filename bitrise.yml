@@ -15,13 +15,13 @@ workflows:
     steps:
     - git-clone@8: {}
     - script@1:
-        title: Remove problematic references and build
+        title: Clean Xcode project and build
         inputs:
         - content: |
             #!/usr/bin/env bash
             set -ex
             
-            echo "Removing problematic file references from Xcode project"
+            echo "Cleaning Xcode project of problematic file references"
             
             # Navigate to iOS project
             cd ios/App
@@ -31,15 +31,26 @@ workflows:
               # Create backup
               cp App.xcodeproj/project.pbxproj App.xcodeproj/project.pbxproj.backup
               
-              # Remove references to missing files
-              sed -i '' '/config\.xml/d' App.xcodeproj/project.pbxproj
-              sed -i '' '/capacitor\.config\.json/d' App.xcodeproj/project.pbxproj
-              sed -i '' '/public/d' App.xcodeproj/project.pbxproj
+              echo "Removing problematic file references..."
               
-              echo "Removed problematic file references"
+              # Remove all references to config.xml
+              sed -i '' '/config\.xml/d' App.xcodeproj/project.pbxproj
+              
+              # Remove all references to capacitor.config.json
+              sed -i '' '/capacitor\.config\.json/d' App.xcodeproj/project.pbxproj
+              
+              # Remove all references to public directory
+              sed -i '' '/\/public/d' App.xcodeproj/project.pbxproj
+              sed -i '' '/public\//d' App.xcodeproj/project.pbxproj
+              
+              echo "Removed problematic file references from Xcode project"
+              
+              # Show difference
+              echo "Changes made to project.pbxproj:"
+              diff App.xcodeproj/project.pbxproj.backup App.xcodeproj/project.pbxproj || true
             fi
             
-            # Create minimal Podfile
+            # Create working Podfile
             cat > Podfile << 'EOF'
             platform :ios, '14.0'
             use_frameworks!
@@ -69,7 +80,7 @@ workflows:
             end
             EOF
             
-            echo "Project cleaned and ready for build"
+            echo "Xcode project cleaned and ready for build"
             
     - cocoapods-install@2:
         inputs:
